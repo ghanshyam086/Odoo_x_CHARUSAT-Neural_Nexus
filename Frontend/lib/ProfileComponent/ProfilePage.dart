@@ -1,4 +1,3 @@
-// lib/ProfileComponent/ProfilePage.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -20,8 +19,9 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic> userData = {};
   bool isLoading = true;
-  int streakCount = 0;
+  List<Map<String, dynamic>> weeklyStreaks = List.generate(7, (index) => {'completed': false, 'steps': 0});
   String userId = "123456";
+  int todaySteps = 0;
 
   @override
   void initState() {
@@ -63,7 +63,18 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          streakCount = data['streakCount'] ?? 0;
+          // Assuming API returns a list of daily steps for the last 7 days
+          List<dynamic> streakData = data['weeklyStreaks'] ?? [];
+          for (int i = 0; i < 7 && i < streakData.length; i++) {
+            weeklyStreaks[i] = {
+              'completed': streakData[i]['steps'] >= (data['dailyStepGoal'] ?? 10000),
+              'steps': streakData[i]['steps'] ?? 0,
+            };
+          }
+          // Update today's steps if available
+          if (streakData.isNotEmpty) {
+            todaySteps = streakData.last['steps'] ?? 0;
+          }
         });
       } else {
         print('Failed to fetch streaks: ${response.statusCode}');
@@ -94,8 +105,13 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() { isLoading = false; });
   }
 
-  void _updateStreak(int stepsTaken) async {
-    await _fetchStreaks();
+  void _updateStreak(int stepsTaken) {
+    setState(() {
+      todaySteps = stepsTaken;
+      weeklyStreaks[6]['steps'] = stepsTaken; // Update today's steps
+      weeklyStreaks[6]['completed'] = stepsTaken >= 10000; // Assuming 10k step goal
+    });
+    _fetchStreaks(); // Refresh streak data from server
   }
 
   @override
@@ -164,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
           StepCounter(
             userId: userId,
             onStepUpdate: _updateStreak,
-            initialUserData: userData, // Pass userData (updated from initialUserData)
+            initialUserData: userData,
           ),
           const SizedBox(height: 20),
           _buildStreakSection(),
@@ -198,15 +214,24 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStreakSection() {
     return Card(
       elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text('Weekly Step Streaks', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            const Text(
+              'Weekly Step Streaks',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+            ),
+            const SizedBox(height: 20),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(7, (index) => _buildStreakStar(index < streakCount)),
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(7, (index) => _buildStreakDay(index)),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Current Streak: ${_calculateStreak()} days',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         ),
@@ -214,19 +239,67 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStreakStar(bool completed) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 500),
-        child: Icon(
-          completed ? Icons.star : Icons.star_border,
-          key: ValueKey(completed),
-          color: completed ? Colors.yellow : Colors.grey,
-          size: 30,
+  Widget _buildStreakDay(int index) {
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final bool isToday = index == 6; // Assuming 6 is today
+    final int steps = weeklyStreaks[index]['steps'];
+    const int dailyGoal = 10000; // Replace with actual goal from server if available
+    double progress = steps / dailyGoal;
+    if (progress > 1) progress = 1;
+
+    return Column(
+      children: [
+        Text(
+          days[index],
+          style: TextStyle(
+            fontSize: 14,
+            color: isToday ? Colors.blueAccent : Colors.grey,
+            fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          width: 40,
+          height: 40,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircularProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey.shade200,
+                valueColor: AlwaysStoppedAnimation(
+                  weeklyStreaks[index]['completed'] ? Colors.green : Colors.blueAccent,
+                ),
+                strokeWidth: 4,
+              ),
+              Icon(
+                weeklyStreaks[index]['completed'] ? Icons.check : Icons.directions_walk,
+                size: 20,
+                color: weeklyStreaks[index]['completed'] ? Colors.green : Colors.grey,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$steps',
+          style: const TextStyle(fontSize: 12),
+        ),
+      ],
     );
+  }
+
+  int _calculateStreak() {
+    int streak = 0;
+    for (var day in weeklyStreaks.reversed) {
+      if (day['completed']) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
   }
 
   Widget _buildInfoSection(String title, List<Widget> children) {
