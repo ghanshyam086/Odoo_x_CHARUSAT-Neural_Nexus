@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import './LoginPage.dart';
+import '../LoginSignupCompnent/LoginPage.dart';
 import 'package:http/http.dart' as http;
 import '../PortSection/ConfigFile.dart';
 
