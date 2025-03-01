@@ -1,7 +1,9 @@
-// lib/StepCounter.dart (assuming fitsync package structure)
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:fitsync/PortSection/ConfigFile.dart';
 import '../MainPage/Home.dart'; // Import HomePage for navigation
 
@@ -22,14 +24,47 @@ class StepCounter extends StatefulWidget {
 
 class _StepCounterState extends State<StepCounter> {
   int stepsTaken = 0;
-  int stepGoal = 50000;
+  int stepGoal = 1000;
   bool isLoading = true;
-  final TextEditingController _controller = TextEditingController();
+  StreamSubscription<StepCount>? _stepSubscription;
 
   @override
   void initState() {
     super.initState();
-    _fetchSteps();
+    _initializePedometer();
+    _fetchSteps(); // Fetch initial data from server
+  }
+
+  Future<void> _initializePedometer() async {
+    var status = await Permission.activityRecognition.request();
+    if (status.isGranted) {
+      _stepSubscription = Pedometer.stepCountStream.listen(
+        _onStepCount,
+        onError: _onStepCountError,
+      );
+    } else {
+      print('Permission denied for activity recognition');
+      setState(() { isLoading = false; });
+    }
+  }
+
+  void _onStepCount(StepCount event) {
+    if (mounted) {
+      setState(() {
+        // Update stepsTaken with live data, assuming event.steps is cumulative
+        if (event.steps > stepsTaken) {
+          stepsTaken = event.steps;
+          widget.onStepUpdate(stepsTaken); // Notify parent widget
+          _submitSteps(); // Auto-submit live steps to server
+        }
+      });
+    }
+  }
+
+  void _onStepCountError(Object error) {
+    if (mounted) {
+      print('Step counting error: $error');
+    }
   }
 
   Future<void> _fetchSteps() async {
@@ -39,7 +74,7 @@ class _StepCounterState extends State<StepCounter> {
         final data = json.decode(response.body);
         setState(() {
           stepsTaken = data['stepsTaken'] ?? 0;
-          stepGoal = data['todayStepGoal'] ?? 50000;
+          stepGoal = data['todayStepGoal'] ?? 1000;
           isLoading = false;
         });
       } else {
@@ -53,34 +88,28 @@ class _StepCounterState extends State<StepCounter> {
   }
 
   Future<void> _submitSteps() async {
-    final steps = int.tryParse(_controller.text) ?? 0;
     try {
       final response = await http.post(
         Uri.parse(submitSteps),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': widget.userId, 'stepsTaken': steps}),
+        body: json.encode({'userId': widget.userId, 'stepsTaken': stepsTaken}),
       );
       if (response.statusCode == 201) {
-        setState(() {
-          stepsTaken = steps;
-        });
-        widget.onStepUpdate(steps);
-        _controller.clear();
-        // Navigate back to HomePage with initialUserData if provided
-        if (widget.initialUserData != null) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(initialUserData: widget.initialUserData),
-            ),
-          );
-        }
+        print('Steps submitted successfully: $stepsTaken');
       } else {
         print('Failed to submit steps: ${response.statusCode}');
       }
     } catch (e) {
       print('Error submitting steps: $e');
     }
+  }
+
+
+
+  @override
+  void dispose() {
+    _stepSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -90,42 +119,95 @@ class _StepCounterState extends State<StepCounter> {
 
     return Card(
       elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-          children: [
-            const Text('Daily Step Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade300,
-              valueColor: const AlwaysStoppedAnimation(Colors.blue),
-            ),
-            const SizedBox(height: 10),
-            Text('$stepsTaken / $stepGoal steps'),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter steps',
-                      border: OutlineInputBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.teal[50]!, Colors.white],
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+            children: [
+              const Text(
+                'Daily Step Goal',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "$stepsTaken",
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
+                      ),
+                    ),
+                    const Text(
+                      "Steps",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: const AlwaysStoppedAnimation(Colors.teal),
+                minHeight: 10,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '$stepsTaken / $stepGoal steps',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _submitSteps,
-                  child: const Text('Submit'),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
