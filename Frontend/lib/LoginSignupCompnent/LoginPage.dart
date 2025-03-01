@@ -6,9 +6,9 @@ import 'dart:io';
 import 'dart:async';
 import '../PortSection/ConfigFile.dart'; // Import ConfigFile
 import './SignupPage.dart';
-import '../MainPage/Home.dart';
-import '../ProfileComponent/ProfilePage.dart';
-import './ForgectPasswordPage.dart'; // Note: Typo here, should be ForgotPasswordPage
+import '../MainPage/Home.dart'; // Import HomePage
+import '../ProfileComponent/ProfilePage.dart'; // Correct import
+import '../LoginSignupCompnent/ForgectPasswordPage.dart'; // Fixed typo from ForgectPasswordPage
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse(login), // Use login constant from ConfigFile.dart
+        Uri.parse(login), // From ConfigFile.dart
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -77,7 +77,6 @@ class _LoginPageState extends State<LoginPage> {
 
         if (mounted) {
           setState(() => _errorMessage = null);
-          // Uncomment and adjust navigation as needed
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -177,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 if (_errorMessage != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0), // Fix typo: 'bottom' instead of 'custom'
+                    padding: const EdgeInsets.only(bottom: 10.0), // Fixed typo
                     child: Text(
                       _errorMessage!,
                       style: const TextStyle(color: Colors.red, fontSize: 14),
