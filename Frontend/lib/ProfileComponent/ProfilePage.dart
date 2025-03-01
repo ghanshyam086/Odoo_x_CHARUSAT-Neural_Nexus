@@ -1,91 +1,145 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import '../LoginSignupCompnent/LoginPage.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
-
-  @override
-  _ProfilePageState createState() => _ProfilePageState();
+void main() {
+  runApp(FitSyncApp());
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  Map<String, dynamic> userData = {};
-  bool isLoading = true;
-
+class FitSyncApp extends StatelessWidget {
   @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    final userDataString = prefs.getString('user_data');
-
-    if (token == null) {
-      _navigateToLogin();
-      return;
-    }
-
-    setState(() {
-      userData = userDataString != null ? json.decode(userDataString) : {};
-      isLoading = false;
-    });
-  }
-
-  void _navigateToLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: HomePage(),
     );
   }
+}
 
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    _navigateToLogin();
-  }
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    DashboardPage(),
+    AIChatBotPage(),
+    LabReportPage(),
+    HealthContentsPage(),
+    ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : userData.isEmpty
-          ? const Center(child: Text('No user data available'))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(title: Text("Fit Sync")),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            Center(
-              child: CircleAvatar(
-                radius: 50,
-                child: Text(
-                  userData['name']?[0].toUpperCase() ?? 'U',
-                  style: const TextStyle(fontSize: 40, color: Colors.white),
-                ),
-              ),
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.green),
+              child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 24)),
             ),
-            const SizedBox(height: 20),
-            Text('Name: ${userData['name'] ?? 'N/A'}'),
-            Text('Email: ${userData['email'] ?? 'N/A'}'),
-            Text('Mobile: ${userData['mobile'] ?? 'N/A'}'),
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text("AI Chat Bot"),
+              onTap: () {
+                setState(() {
+                  _currentIndex = 1;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.description),
+              title: Text("Lab Report"),
+              onTap: () {
+                setState(() {
+                  _currentIndex = 2;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.library_books),
+              title: Text("Health Contents"),
+              onTap: () {
+                setState(() {
+                  _currentIndex = 3;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text("Profile"),
+              onTap: () {
+                setState(() {
+                  _currentIndex = 4;
+                });
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "AI Chat Bot"),
+          BottomNavigationBarItem(icon: Icon(Icons.description), label: "Lab Report"),
+          BottomNavigationBarItem(icon: Icon(Icons.library_books), label: "Health Contents"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      ),
     );
+  }
+}
+
+class DashboardPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("Dashboard Page"));
+  }
+}
+
+class AIChatBotPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("AI Chat Bot Page"));
+  }
+}
+
+class LabReportPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("Lab Report Page"));
+  }
+}
+
+class HealthContentsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("Health Contents Page"));
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("Profile Page"));
   }
 }
