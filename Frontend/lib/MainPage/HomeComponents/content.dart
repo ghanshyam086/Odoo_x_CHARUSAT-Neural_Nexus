@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../HomeComponents/addpostscreen.dart';
+import '../../PortSection/ConfigFile.dart'; // Import the config file
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
@@ -23,7 +24,7 @@ class _ContentPageState extends State<ContentPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchPosts() async {
-    final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/posts'));
+    final response = await http.get(Uri.parse(getPosts)); // Use config constant
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(json.decode(response.body));
     } else {
@@ -34,7 +35,7 @@ class _ContentPageState extends State<ContentPage> {
   Future<void> _likePost(String postId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.16.218.120:3000/api/likes'),
+        Uri.parse(likePost), // Use config constant
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'postId': postId, 'userId': '123456'}), // Replace '123456' with actual user ID
       );
@@ -119,15 +120,15 @@ class _ContentPageState extends State<ContentPage> {
           posts[index]['Discription'] ?? '',
           posts[index]['createdAt'] ?? '',
           posts[index]['postphoto'] ?? '',
-          posts[index]['_id'] ?? '', // Assuming '_id' is the post ID
-          posts[index]['likeCount'] ?? 0, // Assuming 'likeCount' is returned from API
+          posts[index]['_id'] ?? '',
+          posts[index]['likeCount'] ?? 0,
         );
       },
     );
   }
 
   Widget _buildPostCard(BuildContext context, String title, String description, String date, String imagePath, String postId, int likeCount) {
-    bool isLiked = false; // Track local like state (could fetch from API if user-specific)
+    bool isLiked = false;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
@@ -179,7 +180,7 @@ class _ContentPageState extends State<ContentPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      'http://172.16.218.120:3000/$imagePath',
+                      '$imageBaseUrl$imagePath', // Use config constant for image URL
                       fit: BoxFit.cover,
                       width: double.infinity,
                       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
@@ -302,7 +303,7 @@ class PostDetailPage extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  'http://172.16.218.120:3000/$imagePath',
+                  '$imageBaseUrl$imagePath', // Use config constant for image URL
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,

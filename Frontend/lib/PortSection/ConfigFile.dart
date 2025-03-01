@@ -1,4 +1,4 @@
-const String baseUrl = 'http://172.16.218.120:3000/';
+const String baseUrl = 'http://172.16.218.172:3000/';
 const String registration = '${baseUrl}registration';
 const String login = '${baseUrl}login';
 const String addTodo = '${baseUrl}storeTodo';
@@ -6,3 +6,7 @@ const String getToDoList = '${baseUrl}getUserTodoList';
 const String deleteTodo = '${baseUrl}deleteTodo';
 const String getBloodReports = '${baseUrl}api/blood-reports/';
 const String addBloodReport = '${baseUrl}api/blood-reports/';
+const String addPost = '${baseUrl}api/posts';
+const String getPosts = '${baseUrl}api/posts'; // Added for fetching posts
+const String likePost = '${baseUrl}api/likes'; // Added for liking posts
+const String imageBaseUrl = baseUrl; // Added for image paths
