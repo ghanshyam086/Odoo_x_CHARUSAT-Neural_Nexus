@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle; // For parsing bold text
 
 class AIChatbotPage extends StatefulWidget {
   const AIChatbotPage({super.key});
@@ -77,7 +76,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
   Future<void> _getBotResponse(String message) async {
     try {
       setState(() => _isLoading = true); // Show loading indicator
-      const apiKey = 'AIzaSyC1QK3nqHdUiPQ5WHs_YCfDJs_tChAENE4';
+      const apiKey = '8ee2794cd73a41b68c8d3c399d5710c4';
       final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
       );
@@ -152,57 +151,20 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
     await _getBotResponse(predefinedQuery);
   }
 
-  // Parse and bold text within asterisks (*)
-  Widget _parseBoldText(String text) {
-    final List<TextSpan> spans = [];
-    final RegExp exp = RegExp(r'\*(.*?)\*');
-    int lastMatchEnd = 0;
-
-    exp.allMatches(text).forEach((match) {
-      final start = match.start;
-      final end = match.end;
-      final plainText = text.substring(lastMatchEnd, start);
-      final boldText = text.substring(start + 1, end - 1); // Remove asterisks
-
-      if (plainText.isNotEmpty) {
-        spans.add(TextSpan(
-          text: plainText,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ));
-      }
-      spans.add(TextSpan(
-        text: boldText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ));
-      lastMatchEnd = end;
-    });
-
-    if (lastMatchEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastMatchEnd),
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-      ));
-    }
-
-    return RichText(
-      text: TextSpan(children: spans),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'AI Chatbot',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: Colors.blue.shade900,
         elevation: 2,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -330,12 +292,12 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
                                 'AI Bot: ',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue, // Match app color
+                                  color: Colors.blue,
                                   fontSize: 12,
                                 ),
                               ),
                               CircularProgressIndicator(
-                                color: Colors.blue.shade800, // Match app color
+                                color: Colors.blue.shade800,
                                 strokeWidth: 2,
                               ),
                             ],
@@ -356,7 +318,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
                           maxWidth: MediaQuery.of(context).size.width * 0.75,
                         ),
                         decoration: BoxDecoration(
-                          color: isUser ? Colors.blue.shade800 : Colors.blue.shade800, // Match app color for AI bot
+                          color: isUser ? Colors.blue.shade800 : Colors.blue.shade800,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -378,7 +340,10 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            _parseBoldText(entry.values.first), // Use parsed text for bold formatting
+                            Text(
+                              entry.values.first,
+                              style: const TextStyle(color: Colors.white, fontSize: 16),
+                            ),
                           ],
                         ),
                       ),
@@ -410,12 +375,12 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _sendMessage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade800, // Always visible and styled
+                        backgroundColor: Colors.blue.shade800,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12), // Rounded rectangle instead of circle
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // Larger padding for visibility
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                         elevation: 2,
                       ),
                       child: Row(
@@ -448,7 +413,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
       }),
       style: ElevatedButton.styleFrom(
         backgroundColor: _selectedChatType == type
-            ? Colors.blue.shade800
+            ? Colors.blue.shade900
             : Colors.grey.shade300,
         foregroundColor: _selectedChatType == type
             ? Colors.white
@@ -466,47 +431,6 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
           fontWeight: _selectedChatType == type ? FontWeight.bold : FontWeight.normal,
         ),
       ),
-    );
-  }
-
-  // Parse and bold text within asterisks (*)
-  Widget _BoldText(String text) {
-    final List<TextSpan> spans = [];
-    final RegExp exp = RegExp(r'\*(.*?)\*');
-    int lastMatchEnd = 0;
-
-    exp.allMatches(text).forEach((match) {
-      final start = match.start;
-      final end = match.end;
-      final plainText = text.substring(lastMatchEnd, start);
-      final boldText = text.substring(start + 1, end - 1); // Remove asterisks
-
-      if (plainText.isNotEmpty) {
-        spans.add(TextSpan(
-          text: plainText,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ));
-      }
-      spans.add(TextSpan(
-        text: boldText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ));
-      lastMatchEnd = end;
-    });
-
-    if (lastMatchEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastMatchEnd),
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-      ));
-    }
-
-    return RichText(
-      text: TextSpan(children: spans),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../ProfileComponent/ProfilePage.dart';
 import 'HomeComponents/aichatbot.dart';
+import '../MainPage/HomeComponents/aichatbot.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,12 +11,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  bool _profileCompleted = false;
 
   final List<Widget> _pages = [
     const HomeContent(),
     const AIChatbotPage(),
-    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -40,7 +37,6 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: "AI Chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue.shade900,
@@ -57,10 +53,6 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
-
-  BuildContext? get context => null;
-
-  get _selectedButtonIndex => null;
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +140,51 @@ class HomeContent extends StatelessWidget {
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+            // Healthcare Services with 3x2 Grid
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Your Health",
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.07,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        offset: const Offset(1, 1),
+                        blurRadius: 3,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.015),
+                Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.035),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      crossAxisSpacing: MediaQuery.of(context).size.width * 0.025,
+                      mainAxisSpacing: MediaQuery.of(context).size.height * 0.015,
+                      childAspectRatio: 0.9,
+                      children: [
+                        _buildHealthButton(context, "AI Chat", Icons.chat, Colors.green.shade300, 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             // Daily Health Tips
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,13 +217,13 @@ class HomeContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildTip("Stay hydrated: Drink 8 glasses of water daily!", Colors.green.shade700),
+                        _buildTip(context, "Stay hydrated: Drink 8 glasses of water daily!", Colors.green.shade700),
                         SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                        _buildTip("Exercise 30 minutes daily for better health!", Colors.green.shade700),
+                        _buildTip(context, "Exercise 30 minutes daily for better health!", Colors.green.shade700),
                         SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                        _buildTip("Get 7-9 hours of quality sleep each night!", Colors.green.shade700),
+                        _buildTip(context, "Get 7-9 hours of quality sleep each night!", Colors.green.shade700),
                         SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                        _buildTip("Eat a balanced diet rich in fruits and vegetables!", Colors.green.shade700),
+                        _buildTip(context, "Eat a balanced diet rich in fruits and vegetables!", Colors.green.shade700),
                       ],
                     ),
                   ),
@@ -238,23 +275,21 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget _buildHealthButton(BuildContext context, String label, IconData icon, Color color, int index) {
-    bool isSelected = _selectedButtonIndex == index;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue.shade900 : color,
-        foregroundColor: isSelected ? Colors.white : Colors.black87,
+        backgroundColor: Colors.green.shade300,
+        foregroundColor: Colors.black87,
         padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height * 0.02,
           horizontal: MediaQuery.of(context).size.width * 0.02,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: isSelected ? Colors.blue.shade200 : Colors.transparent, width: 1),
+          side: BorderSide(color: Colors.green.shade200, width: 1),
         ),
-        elevation: isSelected ? 8 : 4,
+        elevation: 4,
       ),
       onPressed: () {
-        // setState(() => _selectedButtonIndex = index);
         if (label == "AI Chat") {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const AIChatbotPage()));
         }
@@ -265,7 +300,7 @@ class HomeContent extends StatelessWidget {
           Icon(
             icon,
             size: MediaQuery.of(context).size.width * 0.07,
-            color: isSelected ? Colors.white : Colors.black87,
+            color: Colors.black87,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.0075),
           Text(
@@ -274,10 +309,10 @@ class HomeContent extends StatelessWidget {
             style: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.035,
               fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.black87,
+              color: Colors.black87,
               shadows: [
                 Shadow(
-                  color: isSelected ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.2),
+                  color: Colors.black.withOpacity(0.2),
                   offset: const Offset(0, 1),
                   blurRadius: 2,
                 ),
@@ -289,16 +324,16 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTip(String text, Color iconColor) {
+  Widget _buildTip(BuildContext context, String text, Color iconColor) {
     return Row(
       children: [
-        Icon(Icons.lightbulb_outline, color: iconColor, size: MediaQuery.of(context!).size.width * 0.06),
-        SizedBox(width: MediaQuery.of(context!).size.width * 0.025),
+        Icon(Icons.lightbulb_outline, color: iconColor, size: MediaQuery.of(context).size.width * 0.06),
+        SizedBox(width: MediaQuery.of(context).size.width * 0.025),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
-              fontSize: MediaQuery.of(context!).size.width * 0.045,
+              fontSize: MediaQuery.of(context).size.width * 0.045,
               color: Colors.black87,
               height: 1.5,
             ),
@@ -307,7 +342,4 @@ class HomeContent extends StatelessWidget {
       ],
     );
   }
-
-  void setState(int Function() param0) {}
 }
-
