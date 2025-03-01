@@ -76,7 +76,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
   Future<void> _getBotResponse(String message) async {
     try {
       setState(() => _isLoading = true); // Show loading indicator
-      const apiKey = '8ee2794cd73a41b68c8d3c399d5710c4';
+      const apiKey = 'AIzaSyCeVAcIB9H0WtOW6oNNRH7f1NQdjXBgc74';
       final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
       );
