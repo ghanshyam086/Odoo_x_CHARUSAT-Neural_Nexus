@@ -1,4 +1,5 @@
 import 'package:fitsync/MainPage/Home.dart';
+import 'package:fitsync/PortSection/ConfigFile.dart';
 import 'package:fitsync/Step_Counter.dart';
 import 'package:flutter/material.dart';
 import './LoginSignupCompnent/LoginPage.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home:  StepCounterApp()
+      home:  const LoginPage()
     );
   }
 }

@@ -6,6 +6,7 @@ const reportRouter = require('./routers/report.router');
 const bloodReportRoutes = require('./routers/bloodReport.router'); 
 const postRoutes = require('./routers/postRoutes');
 const doctorRoutes = require('./routers/doctorRoutes');
+const stepRoutes = require('./routers/stepRoutes'); 
 const cors = require('cors');
 
 const port = 3000;
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // Routes
+app.use('/api', stepRoutes);
 app.use('/api/reports', reportRouter);
 app.use('/api/blood-reports', bloodReportRoutes); 
 app.use('/api/posts', postRoutes);

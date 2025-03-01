@@ -10,6 +10,7 @@ import 'HomeComponents/labreport.dart'; // Uncommented
 import 'HomeComponents/NearHospitals.dart'; // Uncommented, renamed to DoctorScreen for consistency
 import 'HomeComponents/Aboutus.dart';
 import 'HomeComponents/settings.dart';
+import 'package:fitsync/Step_Counter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -118,6 +119,7 @@ class _HomePageState extends State<HomePage> {
         }
         return true; // Allow app exit from home
       },
+
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
