@@ -1,8 +1,8 @@
+import 'package:fitsync/MainPage/Home.dart';
 import 'package:flutter/material.dart';
 import './LoginSignupCompnent/LoginPage.dart';
-// import 'home.dart';
-// import 'doctor_screen.dart';
-// import 'add_doctor_screen.dart';
+import './MainPage/Home.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: HomePage()
     );
   }
 }

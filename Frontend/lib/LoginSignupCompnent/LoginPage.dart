@@ -6,7 +6,7 @@ import 'dart:io';
 import 'dart:async';
 // import 'config.dart';
 import './SignupPage.dart';
-// import 'home.dart';
+// import './mainpage/home.dart';
 import '../ProfileComponent/ProfilePage.dart';
 import './ForgectPasswordPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
