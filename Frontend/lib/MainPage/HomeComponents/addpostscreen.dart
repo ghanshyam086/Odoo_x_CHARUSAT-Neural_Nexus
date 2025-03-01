@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import '../../PortSection/ConfigFile.dart'; // Import the config file
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -43,7 +44,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://172.16.218.120:3000/api/posts'),
+        Uri.parse(addPost), // Use the constant from config.dart
       );
 
       // Add text fields

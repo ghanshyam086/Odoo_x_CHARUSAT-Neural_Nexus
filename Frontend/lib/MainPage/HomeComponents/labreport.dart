@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'AnalyzingLabReportPage.dart';
+import '../../PortSection/ConfigFile.dart'; // Import the config file
 
 class LabReportPage extends StatefulWidget {
   const LabReportPage({super.key});
@@ -24,7 +25,7 @@ class _LabReportPageState extends State<LabReportPage> {
   // Fetch all reports from the API
   Future<void> _fetchReports() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/blood-reports/'));
+      final response = await http.get(Uri.parse(getBloodReports)); // Use config constant
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -48,7 +49,7 @@ class _LabReportPageState extends State<LabReportPage> {
   Future<void> _addReport(Map<String, dynamic> reportData) async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.16.218.120:3000/api/blood-reports/'),
+        Uri.parse(addBloodReport), // Use config constant
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(reportData),
       );
@@ -317,7 +318,7 @@ class LabReportCard extends StatelessWidget {
           style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.04),
         ),
         trailing: Text(
-          "Completed", // Since our API doesn't track status, assuming completed
+          "Completed",
           style: TextStyle(
             fontSize: MediaQuery.of(context).size.width * 0.04,
             color: Colors.green,
@@ -325,7 +326,7 @@ class LabReportCard extends StatelessWidget {
           ),
         ),
         onTap: () {
-          if (context.mounted) { // Ensure context is valid
+          if (context.mounted) {
             Navigator.push(
               context,
               MaterialPageRoute(

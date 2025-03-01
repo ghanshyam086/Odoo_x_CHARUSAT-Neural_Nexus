@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../PortSection/ConfigFile.dart'; // Adjusted import (example path: lib/config/config.dart)
 
 class Doctor {
   final String id;
@@ -61,7 +62,6 @@ class _DoctorScreenState extends State<DoctorScreen> {
   String? _selectedCity;
   List<Doctor> _allDoctors = [];
 
-  // List of major cities in Gujarat
   final List<String> _gujaratCities = [
     'Ahmedabad',
     'Surat',
@@ -87,7 +87,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
   }
 
   Future<List<Doctor>> fetchDoctors() async {
-    final response = await http.get(Uri.parse('http://172.16.218.120:3000/doctors'));
+    final response = await http.get(Uri.parse(getDoctors)); // Using getDoctors from config
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       _allDoctors = data.map((json) => Doctor.fromJson(json)).toList();
@@ -163,7 +163,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                     return ListTile(
                       leading: doctor.photo != null
                           ? Image.network(
-                        'http://172.16.218.120:3000/uploads/${doctor.photo}',
+                        '$imageBaseUrl${doctor.photo}',
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
@@ -211,7 +211,7 @@ class DoctorDetailScreen extends StatelessWidget {
                 children: [
                   doctor.photo != null
                       ? Image.network(
-                    'http://172.16.218.120:3000/uploads/${doctor.photo}',
+                    '$imageBaseUrl${doctor.photo}',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         Container(color: Colors.grey.shade200),

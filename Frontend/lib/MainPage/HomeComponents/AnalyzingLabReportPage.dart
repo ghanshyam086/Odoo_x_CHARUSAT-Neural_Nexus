@@ -1,8 +1,8 @@
-// lib/analyzinglabreport.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
+import '../../PortSection/ConfigFile.dart'; // Import the config file
 
 class AnalyzingLabReportPage extends StatefulWidget {
   const AnalyzingLabReportPage({super.key});
@@ -23,7 +23,7 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
 
   Future<void> _fetchReports() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/blood-reports/'));
+      final response = await http.get(Uri.parse(getBloodReports)); // Use config constant
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -62,18 +62,18 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03), // Reduced padding
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "Lab Report Analytics",
                 style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.04, // Reduced from 0.05
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.01), // Reduced height
+              SizedBox(height: MediaQuery.of(context).size.height * 0.01),
               if (isLoading)
                 const Center(child: CircularProgressIndicator())
               else if (reports.isEmpty)
@@ -81,7 +81,7 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
                   child: Text(
                     "No lab reports available for analysis",
                     style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.035, // Reduced from 0.045
+                      fontSize: MediaQuery.of(context).size.width * 0.035,
                       color: Colors.grey,
                     ),
                   ),
@@ -98,7 +98,7 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
                     _buildChart(context, "MCH (pg)", _getSpots('MCH')),
                     _buildChart(context, "MCHC (%)", _getSpots('MCHC')),
                     _buildChart(context, "ESR (mm/hr)", _getSpots('ESR')),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.015), // Reduced height
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.015),
                   ],
                 ),
             ],
@@ -110,24 +110,24 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
 
   Widget _buildChart(BuildContext context, String title, List<FlSpot> spots) {
     return Card(
-      elevation: 2, // Reduced elevation
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), // Slightly smaller radius
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.01), // Reduced margin
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.01),
       child: Padding(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03), // Reduced padding
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.035, // Reduced from 0.045
+                fontSize: MediaQuery.of(context).size.width * 0.035,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01), // Reduced height
+            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.15, // Reduced height from 0.2
+              height: MediaQuery.of(context).size.height * 0.15,
               child: LineChart(
                 LineChartData(
                   gridData: FlGridData(show: true),
@@ -142,8 +142,8 @@ class _AnalyzingLabReportPageState extends State<AnalyzingLabReportPage> {
                       spots: spots,
                       isCurved: true,
                       color: Colors.blue.shade800,
-                      dotData: FlDotData(show: false), // Removed dots to reduce complexity
-                      belowBarData: BarAreaData(show: false), // Removed filled area
+                      dotData: FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
                     ),
                   ],
                 ),
