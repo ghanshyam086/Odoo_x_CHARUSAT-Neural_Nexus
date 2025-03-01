@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../HomeComponents/addpostscreen.dart';
-import 'addpostscreen.dart'; // Uncommented
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
@@ -21,7 +20,7 @@ class _ContentPageState extends State<ContentPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchPosts() async {
-    final response = await http.get(Uri.parse('http://192.168.230.247:3000/api/posts'));
+    final response = await http.get(Uri.parse('http://192.168.230.227:3000/api/posts'));
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(json.decode(response.body));
     } else {
@@ -151,7 +150,7 @@ class _ContentPageState extends State<ContentPage> {
                   bottomRight: Radius.circular(12),
                 ),
                 child: Image.network(
-                  'http://192.168.230.247:3000/$imagePath', // Adjust base URL as needed
+                  'http://192.168.230.227:3000/$imagePath', // Adjust base URL as needed
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
@@ -219,7 +218,7 @@ class PostDetailPage extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  'http://192.168.230.247:3000/$imagePath',
+                  'http://192.168.230.227:3000/$imagePath',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,

@@ -48,22 +48,24 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse(login), // From ConfigFile.dart
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({
-          'email': _emailController.text.trim(),
-          'password': _passwordController.text,
-        }),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException('Connection timed out. Please try again.');
-        },
-      );
+      final response = await http
+          .post(
+            Uri.parse(login), // From ConfigFile.dart
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: json.encode({
+              'email': _emailController.text.trim(),
+              'password': _passwordController.text,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException('Connection timed out. Please try again.');
+            },
+          );
 
       final responseData = json.decode(response.body);
 
@@ -86,15 +88,23 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() {
-          _errorMessage = responseData['message'] ?? 'Login failed. Please check your credentials.';
+          _errorMessage =
+              responseData['message'] ??
+              'Login failed. Please check your credentials.';
         });
       }
     } on SocketException {
-      setState(() => _errorMessage = 'Cannot connect to server. Check your internet connection.');
+      setState(
+        () =>
+            _errorMessage =
+                'Cannot connect to server. Check your internet connection.',
+      );
     } on TimeoutException {
       setState(() => _errorMessage = 'Connection timed out. Please try again.');
     } on FormatException {
-      setState(() => _errorMessage = 'Invalid server response. Please try again.');
+      setState(
+        () => _errorMessage = 'Invalid server response. Please try again.',
+      );
     } catch (e) {
       setState(() => _errorMessage = 'An unexpected error occurred: $e');
     } finally {
@@ -103,7 +113,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://github.com/DharmikGohil013/Neural-Nexus');
+    final Uri url = Uri.parse(
+      'https://github.com/DharmikGohil013/Neural-Nexus',
+    );
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw Exception('Could not launch $url');
     }
@@ -121,11 +133,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const SizedBox(height: 60),
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 120,
-                  width: 120,
-                ),
+                Image.asset('assets/images/logo.png', height: 120, width: 120),
                 const SizedBox(height: 30),
                 const Text(
                   'Fit Sync',
@@ -145,8 +153,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your email';
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (value == null || value.isEmpty)
+                      return 'Please enter your email';
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -160,7 +171,9 @@ class _LoginPageState extends State<LoginPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: _togglePasswordVisibility,
                     ),
@@ -168,8 +181,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   obscureText: _obscurePassword,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your password';
-                    if (value.length < 6) return 'Password must be at least 6 characters';
+                    if (value == null || value.isEmpty)
+                      return 'Please enter your password';
+                    if (value.length < 6)
+                      return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -193,16 +208,17 @@ class _LoginPageState extends State<LoginPage> {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : const Text('Login'),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -210,7 +226,9 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const ForgotPasswordPage(),
+                      ),
                     );
                   },
                   child: const Text('Forgot Password?'),
@@ -224,7 +242,9 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpPage(),
+                          ),
                         );
                       },
                       child: const Text(

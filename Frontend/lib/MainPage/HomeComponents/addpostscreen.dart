@@ -43,7 +43,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.230.29:3000/api/posts'),
+        Uri.parse('http://192.168.230.227:3000/api/posts'),
       );
 
       // Add text fields

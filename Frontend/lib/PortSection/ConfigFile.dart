@@ -1,4 +1,4 @@
-const String baseUrl = 'http://192.168.68.235:3000/';
+const String baseUrl = 'http://192.168.230.227:3000/';
 const String registration = '${baseUrl}registration';
 const String login = '${baseUrl}login';
 const String addTodo = '${baseUrl}storeTodo';
