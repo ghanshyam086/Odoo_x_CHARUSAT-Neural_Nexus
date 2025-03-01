@@ -47,20 +47,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.png
-    - assets/images/homepage_bg.jpg
-    - assets/images/yoga_flow.jpg
-    - assets/images/hiit.jpg
-    - assets/images/breakfast.jpg
-    - assets/images/streching.jpg
-    - assets/images/breathing.jpg
-    - assets/images/core.jpg
-    - assets/images/hydration.jpg
-    - assets/images/evening.jpg
-    - assets/images/posture.jpg
-    - assets/images/boost.jpg
-    - assets/images/meditation.jpg
-    - assets/images/heart_health.jpg
-    - assets/images/sleep_hygiene.jpg
-    - assets/images/supplements.jpg
-    - assets/images/walking.jpg
 

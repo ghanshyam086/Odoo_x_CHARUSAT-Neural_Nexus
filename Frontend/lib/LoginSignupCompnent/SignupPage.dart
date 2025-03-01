@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import './LoginPage.dart';
 import 'package:http/http.dart' as http;
-import 'config.dart';
+import '../PortSection/ConfigFile.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

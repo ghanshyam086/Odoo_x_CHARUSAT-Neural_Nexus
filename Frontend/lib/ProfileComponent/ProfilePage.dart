@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'login.dart';
-import 'home.dart'; // Import HomePage
+import '../LoginSignupCompnent/LoginPage.dart';
+// import 'home.dart'; // Import HomePage
 
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic>? initialUserData;
@@ -67,10 +67,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _navigateToHome() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => const HomePage()),
+    // );
   }
 
   Future<void> _logout() async {

@@ -5,10 +5,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 // import 'config.dart';
-// import 'signup.dart';
+import './SignupPage.dart';
 // import 'home.dart';
 import '../ProfileComponent/ProfilePage.dart';
-// import 'forgot_password.dart';
+import './ForgectPasswordPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
