@@ -7,8 +7,10 @@ import '../MainPage/HomeComponents/articles.dart';
 import 'HomeComponents/news.dart';
 import 'HomeComponents/content.dart'; // Uncommented
 import 'HomeComponents/labreport.dart'; // Uncommented
-import 'HomeComponents/NearHospitals.dart'; // Uncommented
+import 'HomeComponents/NearHospitals.dart'; // Uncommented, renamed to DoctorScreen for consistency
 import 'HomeComponents/Aboutus.dart';
+import 'HomeComponents/settings.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -17,7 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Ensure this is properly declared as an int variable
 
   final List<Widget> _pages = [
     const HomeContent(),
@@ -33,7 +35,9 @@ class _HomePageState extends State<HomePage> {
   bool _isLoadingNews = true;
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -103,45 +107,57 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Fit Sync',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+    return WillPopScope(
+      onWillPop: () async {
+        // Prevent exiting the app directly; return to home instead
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+          return false; // Prevent back navigation
+        }
+        return true; // Allow app exit from home
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Fit Sync',
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+          backgroundColor: Colors.blue.shade900,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.article, color: Colors.white),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage())),
+              tooltip: 'View Articles',
+            ),
+            IconButton(
+              icon: const Icon(Icons.location_on, color: Colors.white),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen())),
+              tooltip: 'Nearby Doctors',
+            ),
+          ],
         ),
-        backgroundColor: Colors.blue.shade900,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.article, color: Colors.white),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage())),
-            tooltip: 'View Articles',
-          ),
-          IconButton(
-            icon: const Icon(Icons.location_on, color: Colors.white),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen())),
-            tooltip: 'Nearby Doctors',
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(context),
-      body: SafeArea(child: _pages[_selectedIndex]),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "AI Chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-          BottomNavigationBarItem(icon: Icon(Icons.video_library), label: "Content"),
-          BottomNavigationBarItem(icon: Icon(Icons.report), label: "Lab Reports"),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue.shade900,
-        unselectedItemColor: Colors.grey.shade500,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        elevation: 10,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        drawer: _buildDrawer(context),
+        body: SafeArea(child: _pages[_selectedIndex]),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.chat), label: "AI Chat"),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+            BottomNavigationBarItem(icon: Icon(Icons.video_library), label: "Content"),
+            BottomNavigationBarItem(icon: Icon(Icons.report), label: "Lab Reports"),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.blue.shade900,
+          unselectedItemColor: Colors.grey.shade500,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          elevation: 10,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
@@ -194,7 +210,9 @@ class _HomePageState extends State<HomePage> {
                     title: 'Home',
                     onTap: () {
                       Navigator.pop(context);
-                      setState(() => _selectedIndex = 0);
+                      setState(() {
+                        _selectedIndex = 0;
+                      });
                     },
                   ),
                   _buildDrawerItem(
@@ -203,7 +221,9 @@ class _HomePageState extends State<HomePage> {
                     title: 'AI Chat',
                     onTap: () {
                       Navigator.pop(context);
-                      setState(() => _selectedIndex = 1);
+                      setState(() {
+                        _selectedIndex = 1;
+                      });
                     },
                   ),
                   _buildDrawerItem(
@@ -212,7 +232,9 @@ class _HomePageState extends State<HomePage> {
                     title: 'Profile',
                     onTap: () {
                       Navigator.pop(context);
-                      setState(() => _selectedIndex = 2);
+                      setState(() {
+                        _selectedIndex = 2;
+                      });
                     },
                   ),
                   _buildDrawerItem(
@@ -221,7 +243,9 @@ class _HomePageState extends State<HomePage> {
                     title: 'Content',
                     onTap: () {
                       Navigator.pop(context);
-                      setState(() => _selectedIndex = 3);
+                      setState(() {
+                        _selectedIndex = 3;
+                      });
                     },
                   ),
                   _buildDrawerItem(
@@ -230,7 +254,9 @@ class _HomePageState extends State<HomePage> {
                     title: 'Lab Reports',
                     onTap: () {
                       Navigator.pop(context);
-                      setState(() => _selectedIndex = 4);
+                      setState(() {
+                        _selectedIndex = 4;
+                      });
                     },
                   ),
                   _buildDrawerItem(
@@ -260,40 +286,31 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen()));
                     },
                   ),
-                  const Divider(color: Colors.grey),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.logout,
-                    title: 'Logout',
-                    onTap: () => _showLogoutDialog(context),
-                    color: Colors.red.shade600,
+                    icon: Icons.info,
+                    title: 'About Us',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()));
+                    },
                   ),
+                  _buildDrawerItem(
+                    context: context,
+                    icon: Icons.settings,
+                    title: 'Settings',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                    },
+                  ),
+                  Divider(color: Colors.grey),
+                  // Removed logout-related code
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
-            child: const Text('Logout'),
-          ),
-        ],
       ),
     );
   }
@@ -702,6 +719,9 @@ class _HomeContentState extends State<HomeContent> {
         elevation: isSelected ? 8 : 4,
       ),
       onPressed: () {
+        // setState(() {
+        //   _selectedIndex = index;
+        // });
         switch (label) {
           case "AI Chat":
             Navigator.push(context, MaterialPageRoute(builder: (_) => const AIChatbotPage()));
