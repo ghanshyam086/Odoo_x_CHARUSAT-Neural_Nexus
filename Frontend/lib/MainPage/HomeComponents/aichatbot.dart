@@ -30,15 +30,18 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
     "Eating Disorders", "Addiction", "OCD", "PTSD",
   ];
 
-  final List<Map<String, dynamic>> _physicalMessages = []; // Changed to dynamic for RichText
+  final List<Map<String, dynamic>> _physicalMessages = [];
   final List<Map<String, dynamic>> _mentalMessages = [];
   final List<Map<String, dynamic>> _generalMessages = [];
 
   List<Map<String, dynamic>> get _currentMessages {
     switch (_selectedChatType) {
-      case 'Physical': return _physicalMessages;
-      case 'Mental': return _mentalMessages;
-      default: return _generalMessages;
+      case 'Physical':
+        return _physicalMessages;
+      case 'Mental':
+        return _mentalMessages;
+      default:
+        return _generalMessages;
     }
   }
 
@@ -66,7 +69,6 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey',
     );
 
-    // Enhanced prompt for useful, concise content with bold formatting
     String prefixedMessage = _selectedChatType == 'General'
         ? "Provide a concise, useful response to: $message. Use **bold** for key terms."
         : "Focus on ${_selectedChatType.toLowerCase()} health - ${_selectedIssue ?? 'General'}: $message. Provide practical, concise advice and use **bold** for key terms.";
@@ -98,7 +100,6 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
     }
   }
 
-  // Parse markdown (**text**) to RichText with bold formatting
   Widget _parseMarkdownToRichText(String text) {
     final RegExp boldPattern = RegExp(r'\*\*(.*?)\*\*');
     List<TextSpan> spans = [];
@@ -109,7 +110,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
         spans.add(TextSpan(text: text.substring(lastEnd, match.start)));
       }
       spans.add(TextSpan(
-        text: match.group(1), // Text inside ** **
+        text: match.group(1),
         style: const TextStyle(fontWeight: FontWeight.bold),
       ));
       lastEnd = match.end;
@@ -122,7 +123,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
     return RichText(
       text: TextSpan(
         children: spans,
-        style: const TextStyle(color: Colors.white, fontSize: 16), // Medium size
+        style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
     );
   }
@@ -182,25 +183,36 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
         child: SafeArea(
           child: Column(
             children: [
+              // Responsive Chat Type Selection
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildChatButton('Physical', Icons.fitness_center),
-                    _buildChatButton('Mental', Icons.psychology),
-                    _buildChatButton('General', Icons.chat),
-                  ],
+                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // Dynamic padding
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildChatButton('Physical', Icons.fitness_center),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                      _buildChatButton('Mental', Icons.psychology),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                      _buildChatButton('General', Icons.chat),
+                    ],
+                  ),
                 ),
               ),
+              // Responsive Issue Dropdown
               if (_selectedChatType != 'General')
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.04,
+                    vertical: MediaQuery.of(context).size.height * 0.01,
+                  ),
                   child: _buildIssueDropdown(),
                 ),
+              // Messages Area
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
                   itemCount: _currentMessages.length + (_isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (_isLoading && index == _currentMessages.length) {
@@ -212,6 +224,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
                   },
                 ),
               ),
+              // Responsive Input Area
               _buildInputArea(),
             ],
           ),
@@ -228,7 +241,10 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
       }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height * 0.015,
+          horizontal: MediaQuery.of(context).size.width * 0.05,
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: _selectedChatType == type
@@ -246,9 +262,10 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
           ],
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min, // Prevents overflow
           children: [
             Icon(icon, color: _selectedChatType == type ? Colors.white : Colors.black87, size: 20),
-            const SizedBox(width: 8),
+            SizedBox(width: MediaQuery.of(context).size.width * 0.02),
             Text(
               type,
               style: TextStyle(
@@ -277,6 +294,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
           ),
         ],
       ),
+      width: double.infinity, // Full width but constrained by padding
       child: DropdownButton<String>(
         value: _selectedIssue,
         hint: Text('Pick a ${_selectedChatType.toLowerCase()} issue'),
@@ -305,9 +323,11 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
       child: Align(
         alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.all(16),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+          margin: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.01),
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75, // Reduced from 0.8 to avoid overflow
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isUser
@@ -337,13 +357,13 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.008),
               isUser
                   ? Text(
                 entry["user"],
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               )
-                  : entry["bot"], // RichText for bot response
+                  : entry["bot"],
             ],
           ),
         ),
@@ -355,8 +375,8 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.01),
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -364,7 +384,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
               color: Colors.purple.shade700,
               size: 30,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: MediaQuery.of(context).size.width * 0.03),
             const Text(
               'AI Companion is thinking...',
               style: TextStyle(color: Colors.grey, fontSize: 14),
@@ -377,7 +397,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         boxShadow: [
@@ -401,12 +421,15 @@ class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProvider
                 ),
                 filled: true,
                 fillColor: Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.05,
+                  vertical: MediaQuery.of(context).size.height * 0.02,
+                ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.03),
           FloatingActionButton(
             onPressed: _isLoading ? null : _sendMessage,
             backgroundColor: Colors.blue.shade900,
