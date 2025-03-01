@@ -87,7 +87,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
   }
 
   Future<List<Doctor>> fetchDoctors() async {
-    final response = await http.get(Uri.parse('http://192.168.230.254:3000/doctors'));
+    final response = await http.get(Uri.parse('http://192.168.68.235:3000/doctors'));
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       _allDoctors = data.map((json) => Doctor.fromJson(json)).toList();
@@ -163,7 +163,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                     return ListTile(
                       leading: doctor.photo != null
                           ? Image.network(
-                        'http://192.168.230.254:3000/uploads/${doctor.photo}',
+                        'http://192.168.68.235:3000/uploads/${doctor.photo}',
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
@@ -211,7 +211,7 @@ class DoctorDetailScreen extends StatelessWidget {
                 children: [
                   doctor.photo != null
                       ? Image.network(
-                    'http://192.168.230.254:3000/uploads/${doctor.photo}',
+                    'http://192.168.68.235:3000/uploads/${doctor.photo}',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         Container(color: Colors.grey.shade200),
