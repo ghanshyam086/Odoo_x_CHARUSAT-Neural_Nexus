@@ -36,6 +36,8 @@ dependencies:
   geocoding: ^2.0.5
   google_maps_flutter: ^2.2.3
   geolocator: ^9.0.2
+  animated_text_kit: ^4.2.3
+  confetti: ^0.7.0
 
 flutter_icons:
   android: true

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import '../HomeComponents/addpostscreen.dart';
 
 class ContentPage extends StatefulWidget {
@@ -12,6 +13,8 @@ class ContentPage extends StatefulWidget {
 
 class _ContentPageState extends State<ContentPage> {
   late Future<List<Map<String, dynamic>>> _postsFuture;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -20,12 +23,37 @@ class _ContentPageState extends State<ContentPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchPosts() async {
-    final response = await http.get(Uri.parse('http://192.168.19.113:3000/api/posts'));
+    final response = await http.get(Uri.parse('http://172.16.218.220:3000/api/posts'));
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(json.decode(response.body));
     } else {
       throw Exception('Failed to load posts');
     }
+  }
+
+  Future<void> _likePost(String postId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://172.16.218.220:3000/api/likes'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'postId': postId, 'userId': '123456'}), // Replace '123456' with actual user ID
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _postsFuture = fetchPosts(); // Refresh posts to update like count
+        });
+      } else {
+        print('Failed to like post: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error liking post: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -65,7 +93,7 @@ class _ContentPageState extends State<ContentPage> {
             context,
             MaterialPageRoute(builder: (context) => const AddPostScreen()),
           ).then((_) => setState(() {
-            _postsFuture = fetchPosts(); // Refresh posts after adding a new one
+            _postsFuture = fetchPosts();
           }));
         },
         backgroundColor: Colors.blue.shade800,
@@ -75,15 +103,15 @@ class _ContentPageState extends State<ContentPage> {
   }
 
   Widget _buildPostsSection(BuildContext context, List<Map<String, dynamic>> posts) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.75,
-      ),
+    return PageView.builder(
+      controller: _pageController,
+      scrollDirection: Axis.vertical,
       itemCount: posts.length,
-      padding: const EdgeInsets.all(16),
+      onPageChanged: (index) {
+        setState(() {
+          _currentPage = index;
+        });
+      },
       itemBuilder: (context, index) {
         return _buildPostCard(
           context,
@@ -91,83 +119,145 @@ class _ContentPageState extends State<ContentPage> {
           posts[index]['Discription'] ?? '',
           posts[index]['createdAt'] ?? '',
           posts[index]['postphoto'] ?? '',
+          posts[index]['_id'] ?? '', // Assuming '_id' is the post ID
+          posts[index]['likeCount'] ?? 0, // Assuming 'likeCount' is returned from API
         );
       },
     );
   }
 
-  Widget _buildPostCard(BuildContext context, String title, String description, String date, String imagePath) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailPage(
-              title: title,
-              description: description,
-              date: date,
-              imagePath: imagePath,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+  Widget _buildPostCard(BuildContext context, String title, String description, String date, String imagePath, String postId, int likeCount) {
+    bool isLiked = false; // Track local like state (could fetch from API if user-specific)
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostDetailPage(
+                  title: title,
+                  description: description,
+                  date: date,
+                  imagePath: imagePath,
+                ),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedTextKit(
+                animatedTexts: [
+                  TyperAnimatedText(
                     title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    textStyle: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                    speed: const Duration(milliseconds: 100),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
+                ],
+                isRepeatingAnimation: false,
+              ),
+              const SizedBox(height: 8),
+              Text(date, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+              const SizedBox(height: 16),
+              Expanded(
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 300),
+                  scale: 1.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      'http://172.16.218.220:3000/$imagePath',
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                        return AnimatedOpacity(
+                          opacity: frame == null ? 0 : 1,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeIn,
+                          child: child,
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.blue.shade50,
+                          child: const Center(child: Text('Image not found', style: TextStyle(color: Colors.blue, fontSize: 16))),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              AnimatedTextKit(
+                animatedTexts: [
+                  FadeAnimatedText(
                     description,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                    textStyle: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                    duration: const Duration(milliseconds: 1000),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    date,
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                ],
+                isRepeatingAnimation: false,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  StatefulBuilder(
+                    builder: (context, setState) => Row(
+                      children: [
+                        IconButton(
+                          icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              key: ValueKey(isLiked),
+                              color: isLiked ? Colors.red : Colors.grey,
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isLiked = !isLiked;
+                            });
+                            _likePost(postId);
+                          },
+                        ),
+                        Text('$likeCount', style: const TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      5, // Replace with posts.length for dynamic dots
+                          (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        height: 8,
+                        width: _currentPage == index ? 24 : 8,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index ? Colors.blue.shade900 : Colors.grey,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-                child: Image.network(
-                  'http://192.168.19.113:3000/$imagePath', // Adjust base URL as needed
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.blue.shade50,
-                      child: const Center(
-                        child: Text(
-                          'Image not found',
-                          style: TextStyle(color: Colors.blue, fontSize: 12),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -205,20 +295,14 @@ class PostDetailPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
+              Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 8),
-              Text(
-                date,
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
-              ),
+              Text(date, style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  'http://192.168.19.113:3000/$imagePath',
+                  'http://172.16.218.220:3000/$imagePath',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
@@ -231,31 +315,20 @@ class PostDetailPage extends StatelessWidget {
                       curve: Curves.easeIn,
                     );
                   },
-                  errorBuilder: (BuildContext errorContext, Object error, StackTrace? stackTrace) {
+                  errorBuilder: (context, error, stackTrace) {
                     return Container(
                       width: double.infinity,
                       height: 200,
                       color: Colors.blue.shade50,
-                      child: const Center(
-                        child: Text(
-                          'Image not found',
-                          style: TextStyle(color: Colors.blue, fontSize: 16),
-                        ),
-                      ),
+                      child: const Center(child: Text('Image not found', style: TextStyle(color: Colors.blue, fontSize: 16))),
                     );
                   },
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                description,
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-              ),
+              Text(description, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
               const SizedBox(height: 20),
-              const Text(
-                "Full content and additional tips coming soon...",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
+              const Text("Full content and additional tips coming soon...", style: TextStyle(fontSize: 14, color: Colors.grey)),
             ],
           ),
         ),
