@@ -6,7 +6,6 @@ const reportRouter = require('./routers/report.router');
 const bloodReportRoutes = require('./routers/bloodReport.router'); 
 const postRoutes = require('./routers/postRoutes');
 const doctorRoutes = require('./routers/doctorRoutes');
-const stepRoutes = require('./routers/stepRoutes');
 const cors = require('cors');
 
 const port = 3000;
@@ -24,7 +23,6 @@ app.use('/api/posts', postRoutes);
 const fs = require('fs');
 const path = require('path');
 const uploadDir = path.join(__dirname, 'uploads');
-app.use('/api', stepRoutes);
 app.use('/', doctorRoutes);
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);

@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const PostLike = require('../models/PostLike'); // Import PostLike model
 const multer = require('multer');
 const path = require('path');
 
@@ -10,7 +11,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 // File filter to accept only images based on extension
@@ -31,7 +32,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
 // Create Post
@@ -51,7 +52,8 @@ exports.createPost = [
         Posttitle,
         Discription,
         postphoto: req.file.path,
-        createdAt: new Date(createdAt)
+        createdAt: new Date(createdAt),
+        likeCount: 0, // Initialize likeCount
       };
 
       const newPost = new Post(postData);
@@ -64,7 +66,7 @@ exports.createPost = [
         res.status(500).json({ message: error.message });
       }
     }
-  }
+  },
 ];
 
 // Get All Posts
@@ -85,6 +87,46 @@ exports.getPostById = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
     res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Like a Post
+exports.likePost = async (req, res) => {
+  try {
+    const { postId, userId } = req.body;
+
+    // Check if user already liked the post
+    const existingLike = await PostLike.findOne({ postId, userId });
+    if (existingLike) {
+      return res.status(400).json({ message: 'You already liked this post' });
+    }
+
+    // Add like
+    const postLike = new PostLike({ postId, userId });
+    await postLike.save();
+
+    // Update post like count
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    post.likeCount += 1;
+    await post.save();
+
+    res.status(201).json({ message: 'Post liked', likeCount: post.likeCount });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get Likes for a Post
+exports.getPostLikes = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const likes = await PostLike.find({ postId });
+    res.status(200).json({ likeCountByUser: likes.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

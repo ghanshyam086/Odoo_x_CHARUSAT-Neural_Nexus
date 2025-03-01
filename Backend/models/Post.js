@@ -3,28 +3,32 @@ const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
   PostName: {
     type: String,
-    required: true
+    required: true,
   },
   UserId: {
     type: String,
-    required: true
+    required: true,
   },
   Posttitle: {
     type: String,
-    required: true
+    required: true,
   },
   Discription: {
     type: String,
-    required: true
+    required: true,
   },
   postphoto: {
     type: String, // Stores the file path
-    required: true
+    required: true,
   },
   createdAt: {
     type: Date,
-    required: true
-  }
+    required: true,
+  },
+  likeCount: { // Added field for total likes
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model('Post', postSchema);

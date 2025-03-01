@@ -57,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchStreaks() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.220:3000/api/streaks/$userId'));
+      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/streaks/$userId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -182,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return CircleAvatar(
       radius: 70,
       backgroundImage: userData['photo'] != null
-          ? CachedNetworkImageProvider('http://172.16.218.220:3000/${userData['photo']}')
+          ? CachedNetworkImageProvider('http://172.16.218.120:3000/${userData['photo']}')
           : null,
       child: userData['photo'] == null
           ? Text(userData['name']?[0].toUpperCase() ?? 'U', style: const TextStyle(fontSize: 50, color: Colors.white))

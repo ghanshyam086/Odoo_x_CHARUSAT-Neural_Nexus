@@ -23,7 +23,7 @@ class _ContentPageState extends State<ContentPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchPosts() async {
-    final response = await http.get(Uri.parse('http://172.16.218.220:3000/api/posts'));
+    final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/posts'));
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(json.decode(response.body));
     } else {
@@ -34,7 +34,7 @@ class _ContentPageState extends State<ContentPage> {
   Future<void> _likePost(String postId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.16.218.220:3000/api/likes'),
+        Uri.parse('http://172.16.218.120:3000/api/likes'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'postId': postId, 'userId': '123456'}), // Replace '123456' with actual user ID
       );
@@ -179,7 +179,7 @@ class _ContentPageState extends State<ContentPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      'http://172.16.218.220:3000/$imagePath',
+                      'http://172.16.218.120:3000/$imagePath',
                       fit: BoxFit.cover,
                       width: double.infinity,
                       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
@@ -302,7 +302,7 @@ class PostDetailPage extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  'http://172.16.218.220:3000/$imagePath',
+                  'http://172.16.218.120:3000/$imagePath',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
