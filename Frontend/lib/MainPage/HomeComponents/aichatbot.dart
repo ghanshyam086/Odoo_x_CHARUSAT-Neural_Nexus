@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class AIChatbotPage extends StatefulWidget {
   const AIChatbotPage({super.key});
@@ -9,122 +10,121 @@ class AIChatbotPage extends StatefulWidget {
   _AIChatbotPageState createState() => _AIChatbotPageState();
 }
 
-class _AIChatbotPageState extends State<AIChatbotPage> {
+class _AIChatbotPageState extends State<AIChatbotPage> with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  String _selectedChatType = 'General'; // Default chat type
-  String? _selectedIssue; // Selected issue
-  bool _isLoading = false; // Track loading state
+  String _selectedChatType = 'General';
+  String? _selectedIssue;
+  bool _isLoading = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
-  // Comprehensive list of physical and mental health issues
   final List<String> _physicalIssues = [
-    "Back Pain",
-    "Joint Pain",
-    "Muscle Strain",
-    "Obesity",
-    "Diabetes",
-    "Hypertension",
-    "Asthma",
-    "Cold",
-    "Fever",
-    "Headache",
-    "Flu",
-    "Cough",
-    "Stomach Ache",
-    "Allergies",
-    "Fatigue",
-    "Dizziness",
-    "Arthritis",
-    "Heart Disease",
-    "Chronic Pain",
-    "Injury Recovery",
+    "Back Pain", "Joint Pain", "Muscle Strain", "Obesity", "Diabetes", "Hypertension",
+    "Asthma", "Cold", "Fever", "Headache", "Flu", "Cough", "Stomach Ache", "Allergies",
+    "Fatigue", "Dizziness", "Arthritis", "Heart Disease", "Chronic Pain", "Injury Recovery",
   ];
 
   final List<String> _mentalIssues = [
-    "Anxiety",
-    "Depression",
-    "Stress",
-    "Insomnia",
-    "Burnout",
-    "Panic Attacks",
-    "Mood Swings",
-    "Irritability",
-    "Low Self-Esteem",
-    "Phobias",
-    "Trauma",
-    "Eating Disorders",
-    "Addiction",
-    "OCD",
-    "PTSD",
+    "Anxiety", "Depression", "Stress", "Insomnia", "Burnout", "Panic Attacks",
+    "Mood Swings", "Irritability", "Low Self-Esteem", "Phobias", "Trauma",
+    "Eating Disorders", "Addiction", "OCD", "PTSD",
   ];
 
-  // Separate message lists for each chat type
-  final List<Map<String, String>> _physicalMessages = [];
-  final List<Map<String, String>> _mentalMessages = [];
-  final List<Map<String, String>> _generalMessages = [];
+  final List<Map<String, dynamic>> _physicalMessages = []; // Changed to dynamic for RichText
+  final List<Map<String, dynamic>> _mentalMessages = [];
+  final List<Map<String, dynamic>> _generalMessages = [];
 
-  List<Map<String, String>> get _currentMessages {
+  List<Map<String, dynamic>> get _currentMessages {
     switch (_selectedChatType) {
-      case 'Physical':
-        return _physicalMessages;
-      case 'Mental':
-        return _mentalMessages;
-      default:
-        return _generalMessages;
+      case 'Physical': return _physicalMessages;
+      case 'Mental': return _mentalMessages;
+      default: return _generalMessages;
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+    _fadeAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _getBotResponse(String message) async {
+    setState(() => _isLoading = true);
+    const apiKey = 'AIzaSyCeVAcIB9H0WtOW6oNNRH7f1NQdjXBgc74';
+    final url = Uri.parse(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey',
+    );
+
+    // Enhanced prompt for useful, concise content with bold formatting
+    String prefixedMessage = _selectedChatType == 'General'
+        ? "Provide a concise, useful response to: $message. Use **bold** for key terms."
+        : "Focus on ${_selectedChatType.toLowerCase()} health - ${_selectedIssue ?? 'General'}: $message. Provide practical, concise advice and use **bold** for key terms.";
+
     try {
-      setState(() => _isLoading = true); // Show loading indicator
-      const apiKey = 'AIzaSyCeVAcIB9H0WtOW6oNNRH7f1NQdjXBgc74';
-      final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
-      );
-
-      // Prefix the message based on the selected chat type and issue
-      String prefixedMessage;
-      switch (_selectedChatType) {
-        case 'Physical':
-          prefixedMessage =
-          "Focus on physical health - ${_selectedIssue ?? 'General'}: $message";
-          break;
-        case 'Mental':
-          prefixedMessage =
-          "Focus on mental health - ${_selectedIssue ?? 'General'}: $message";
-          break;
-        default:
-          prefixedMessage = message; // General chat with no prefix
-      }
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'contents': [{
-            'parts': [{'text': prefixedMessage}]
-          }]
+          'contents': [{'parts': [{'text': prefixedMessage}]}],
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final botResponse = _extractResponse(data) ?? 'Could not understand response';
+        final botResponse = _extractResponse(data) ?? 'Sorry, I couldn’t process that.';
         setState(() {
-          _currentMessages.add({"bot": botResponse});
-          _isLoading = false; // Hide loading indicator
+          _currentMessages.add({"bot": _parseMarkdownToRichText(botResponse)});
+          _isLoading = false;
         });
       } else {
-        setState(() {
-          _currentMessages.add({"bot": 'Error: API request failed (${response.statusCode})'});
-          _isLoading = false; // Hide loading indicator on error
-        });
+        throw Exception('API failed with status: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       setState(() {
-        _currentMessages.add({"bot": 'Error: ${e.toString()}'});
-        _isLoading = false; // Hide loading indicator on error
+        _currentMessages.add({"bot": _parseMarkdownToRichText('Oops! Something went wrong: $e')});
+        _isLoading = false;
       });
     }
+  }
+
+  // Parse markdown (**text**) to RichText with bold formatting
+  Widget _parseMarkdownToRichText(String text) {
+    final RegExp boldPattern = RegExp(r'\*\*(.*?)\*\*');
+    List<TextSpan> spans = [];
+    int lastEnd = 0;
+
+    for (Match match in boldPattern.allMatches(text)) {
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(text: text.substring(lastEnd, match.start)));
+      }
+      spans.add(TextSpan(
+        text: match.group(1), // Text inside ** **
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ));
+      lastEnd = match.end;
+    }
+
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastEnd)));
+    }
+
+    return RichText(
+      text: TextSpan(
+        children: spans,
+        style: const TextStyle(color: Colors.white, fontSize: 16), // Medium size
+      ),
+    );
   }
 
   String? _extractResponse(Map<String, dynamic> data) {
@@ -141,14 +141,13 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
 
     _controller.clear();
     setState(() => _currentMessages.add({"user": message}));
-
     await _getBotResponse(message);
   }
 
-  void _sendMessageWithPredefinedQuery(String issue) async {
-    final predefinedQuery = "Provide advice for $issue.";
-    setState(() => _currentMessages.add({"user": predefinedQuery})); // Show issue as user input
-    await _getBotResponse(predefinedQuery);
+  void _sendPredefinedQuery(String issue) async {
+    final query = "Provide advice for $issue.";
+    setState(() => _currentMessages.add({"user": query}));
+    await _getBotResponse(query);
   }
 
   @override
@@ -156,245 +155,64 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'AI Chatbot',
+          'AI Health Companion',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.blue.shade900,
-        elevation: 2,
-
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade900, Colors.purple.shade700],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
+      extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade50, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue.shade100, Colors.purple.shade100, Colors.white],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Chat Type Selection (Three Buttons)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildChatOption('Physical', 'Physical Chat'),
-                        const SizedBox(width: 8),
-                        _buildChatOption('Mental', 'Mental Chat'),
-                        const SizedBox(width: 8),
-                        _buildChatOption('General', 'General Chat'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Issue Selection Dropdown (Only for Physical/Mental)
-              if (_selectedChatType != 'General')
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: DropdownButton<String>(
-                      value: _selectedIssue,
-                      hint: Text(
-                        'Select a ${_selectedChatType.toLowerCase()} issue',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedIssue = newValue;
-                          if (newValue != null) {
-                            _sendMessageWithPredefinedQuery(newValue);
-                          }
-                        });
-                      },
-                      items: (_selectedChatType == 'Physical'
-                          ? _physicalIssues
-                          : _mentalIssues)
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      isExpanded: true,
-                      dropdownColor: Colors.white,
-                      underline: Container(),
-                      icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              // Chat Messages with Loading Indicator on AI Bot Side
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _currentMessages.length + (_isLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (_isLoading && index == _currentMessages.length) {
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          padding: const EdgeInsets.all(14),
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'AI Bot: ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              CircularProgressIndicator(
-                                color: Colors.blue.shade800,
-                                strokeWidth: 2,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    final entry = _currentMessages[index];
-                    final isUser = entry.containsKey("user");
-
-                    return Align(
-                      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        padding: const EdgeInsets.all(14),
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isUser ? Colors.blue.shade800 : Colors.blue.shade800,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isUser ? "You:" : "AI Bot:",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              entry.values.first,
-                              style: const TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Input Field (No Loading Indicator Here)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: "Type your message...",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        onSubmitted: (_) => _sendMessage(),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _sendMessage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade800,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        elevation: 2,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.send, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Send',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildChatButton('Physical', Icons.fitness_center),
+                    _buildChatButton('Mental', Icons.psychology),
+                    _buildChatButton('General', Icons.chat),
                   ],
                 ),
               ),
+              if (_selectedChatType != 'General')
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: _buildIssueDropdown(),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: _currentMessages.length + (_isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (_isLoading && index == _currentMessages.length) {
+                      return _buildLoadingBubble();
+                    }
+                    final entry = _currentMessages[index];
+                    final isUser = entry.containsKey("user");
+                    return _buildMessageBubble(entry, isUser);
+                  },
+                ),
+              ),
+              _buildInputArea(),
             ],
           ),
         ),
@@ -402,31 +220,199 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
     );
   }
 
-  Widget _buildChatOption(String type, String label) {
-    return ElevatedButton(
-      onPressed: () => setState(() {
+  Widget _buildChatButton(String type, IconData icon) {
+    return GestureDetector(
+      onTap: () => setState(() {
         _selectedChatType = type;
-        _selectedIssue = null; // Reset issue selection when chat type changes
+        _selectedIssue = null;
       }),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _selectedChatType == type
-            ? Colors.blue.shade900
-            : Colors.grey.shade300,
-        foregroundColor: _selectedChatType == type
-            ? Colors.white
-            : Colors.black87,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _selectedChatType == type
+                ? [Colors.blue.shade700, Colors.purple.shade600]
+                : [Colors.grey.shade200, Colors.grey.shade300],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            if (_selectedChatType == type)
+              BoxShadow(
+                color: Colors.blue.shade900.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
-        elevation: _selectedChatType == type ? 4 : 0,
+        child: Row(
+          children: [
+            Icon(icon, color: _selectedChatType == type ? Colors.white : Colors.black87, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              type,
+              style: TextStyle(
+                color: _selectedChatType == type ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: _selectedChatType == type ? FontWeight.bold : FontWeight.normal,
+    );
+  }
+
+  Widget _buildIssueDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: DropdownButton<String>(
+        value: _selectedIssue,
+        hint: Text('Pick a ${_selectedChatType.toLowerCase()} issue'),
+        onChanged: (String? value) {
+          setState(() {
+            _selectedIssue = value;
+            if (value != null) _sendPredefinedQuery(value);
+          });
+        },
+        items: (_selectedChatType == 'Physical' ? _physicalIssues : _mentalIssues)
+            .map((issue) => DropdownMenuItem<String>(
+          value: issue,
+          child: Text(issue, style: const TextStyle(fontSize: 14)),
+        ))
+            .toList(),
+        isExpanded: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down_circle, color: Colors.blue),
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(Map<String, dynamic> entry, bool isUser) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.all(16),
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isUser
+                  ? [Colors.blue.shade600, Colors.blue.shade800]
+                  : [Colors.purple.shade600, Colors.purple.shade800],
+            ),
+            borderRadius: BorderRadius.circular(20).copyWith(
+              topLeft: isUser ? const Radius.circular(20) : Radius.zero,
+              topRight: isUser ? Radius.zero : const Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isUser ? 'You' : 'AI Companion',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              isUser
+                  ? Text(
+                entry["user"],
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              )
+                  : entry["bot"], // RichText for bot response
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingBubble() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SpinKitWave(
+              color: Colors.purple.shade700,
+              size: 30,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'AI Companion is thinking...',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Ask me anything...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              ),
+              onSubmitted: (_) => _sendMessage(),
+            ),
+          ),
+          const SizedBox(width: 10),
+          FloatingActionButton(
+            onPressed: _isLoading ? null : _sendMessage,
+            backgroundColor: Colors.blue.shade900,
+            child: const Icon(Icons.send, color: Colors.white),
+          ),
+        ],
       ),
     );
   }

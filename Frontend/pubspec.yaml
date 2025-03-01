@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   animations: ^2.0.0
-  http: ^0.13.0  # Ensure this is included for the API calls
+  http: ^1.2.2  # Ensure this is included for the API calls
   image_picker: ^0.8.7+4 # Use the latest version available
   provider: ^6.1.2
   shared_preferences: ^2.3.2
@@ -30,6 +30,7 @@ dependencies:
   mime: ^1.0.5
   http_parser: ^4.0.2
   flutter_launcher_icons: ^0.14.3
+  flutter_spinkit: ^5.2.1
 
 flutter_icons:
   android: true
