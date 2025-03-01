@@ -9,6 +9,7 @@ const doctorRoutes = require('./routers/doctorRoutes');
 const cors = require('cors');
 
 const port = 3000;
+//port Working
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
