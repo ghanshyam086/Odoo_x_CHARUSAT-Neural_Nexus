@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import './LoginSignupCompnent/LoginPage.dart';
 import './MainPage/Home.dart';
 import 'hospital_finder/hospital_finder_screen.dart';
-import 'package:fitsync/StepCounter.dart';
+import 'package:fitsync/Step_Counter.dart';
+import 'map_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home:  const HomePage()
+      home:   const StepCounterApp()
     );
   }
 }
