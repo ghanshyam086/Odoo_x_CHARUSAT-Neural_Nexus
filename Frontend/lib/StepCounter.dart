@@ -25,7 +25,7 @@ class _StepCounterState extends State<StepCounter> {
 
   Future<void> _fetchSteps() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.220:3000/api/steps/${widget.userId}'));
+      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/steps/${widget.userId}'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -47,7 +47,7 @@ class _StepCounterState extends State<StepCounter> {
     final steps = int.tryParse(_controller.text) ?? 0;
     try {
       final response = await http.post(
-        Uri.parse('http://172.16.218.220:3000/api/steps'),
+        Uri.parse('http://172.16.218.120:3000/api/steps'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': widget.userId, 'stepsTaken': steps}),
       );
