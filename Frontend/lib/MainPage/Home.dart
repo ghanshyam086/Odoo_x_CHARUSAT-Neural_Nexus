@@ -5,9 +5,9 @@ import '../MainPage/HomeComponents/aichatbot.dart';
 import '../ProfileComponent/ProfilePage.dart';
 import '../MainPage/HomeComponents/articles.dart';
 import 'HomeComponents/news.dart';
-// import 'news.dart';
-// import 'labreport.dart';
-// import 'nearbydoctors.dart';
+import 'HomeComponents/content.dart'; // Uncommented
+import 'HomeComponents/labreport.dart'; // Uncommented
+import 'HomeComponents/nearbydoctors.dart'; // Uncommented
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,8 +23,8 @@ class _HomePageState extends State<HomePage> {
     const HomeContent(),
     const AIChatbotPage(),
     const ProfilePage(),
-    // const ContentPage(),
-    // const LabReportPage(),
+    const ContentPage(), // Uncommented
+    const LabReportPage(), // Uncommented
   ];
 
   List<Article> _homeArticles = [];
@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage())),
             tooltip: 'View Articles',
           ),
-          // IconButton(
-          //   icon: const Icon(Icons.location_on, color: Colors.white),
-          //   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctors())),
-          //   tooltip: 'Nearby Doctors',
-          // ),
+          IconButton(
+            icon: const Icon(Icons.location_on, color: Colors.white),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctorsPage())),
+            tooltip: 'Nearby Doctors',
+          ),
         ],
       ),
       drawer: _buildDrawer(context),
@@ -251,16 +251,16 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage()));
                     },
                   ),
-                  // _buildDrawerItem(
-                  //   context: context,
-                  //   icon: Icons.location_on,
-                  //   title: 'Nearby Doctors',
-                    // onTap: () {
-                    //   Navigator.pop(context);
-                    //   Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctors()));
-                    // },
-                  // ),
-                  const Divider(color: Colors.grey), // Fixed by removing 'const' to allow dynamic color
+                  _buildDrawerItem(
+                    context: context,
+                    icon: Icons.location_on,
+                    title: 'Nearby Doctors',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctorsPage()));
+                    },
+                  ),
+                  const Divider(color: Colors.grey),
                   _buildDrawerItem(
                     context: context,
                     icon: Icons.logout,
@@ -318,10 +318,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class NearbyDoctors {
-  const NearbyDoctors();
-}
-
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -350,7 +346,7 @@ class _HomeContentState extends State<HomeContent> {
             .map((article) => Article.fromJson(article))
             .toList();
         setState(() {
-          _homeArticles = articles.take(3).toList(); // Limit to 2–3 articles
+          _homeArticles = articles.take(3).toList();
           _isLoadingArticles = false;
         });
       } else {
@@ -379,7 +375,7 @@ class _HomeContentState extends State<HomeContent> {
             .map((article) => News.fromJson(article))
             .toList();
         setState(() {
-          _homeNews = news.take(3).toList(); // Limit to 2–3 news items
+          _homeNews = news.take(3).toList();
           _isLoadingNews = false;
         });
       } else {
@@ -706,7 +702,6 @@ class _HomeContentState extends State<HomeContent> {
         elevation: isSelected ? 8 : 4,
       ),
       onPressed: () {
-        // setState(() => _selectedIndex = index);
         switch (label) {
           case "AI Chat":
             Navigator.push(context, MaterialPageRoute(builder: (_) => const AIChatbotPage()));
@@ -714,12 +709,12 @@ class _HomeContentState extends State<HomeContent> {
           case "Profile":
             Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
             break;
-        // case "Content":
-        //   Navigator.push(context, MaterialPageRoute(builder: (_) => const ContentPage()));
-        //   break;
-        // case "Lab Reports":
-        //   Navigator.push(context, MaterialPageRoute(builder: (_) => const LabReportPage()));
-        //   break;
+          case "Content":
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ContentPage()));
+            break;
+          case "Lab Reports":
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const LabReportPage()));
+            break;
         }
       },
       child: Column(
