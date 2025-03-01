@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(HealthApp());
+  runApp(FitSyncApp());
 }
 
-class HealthApp extends StatelessWidget {
+class FitSyncApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,10 +33,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Health App")),
+      appBar: AppBar(title: Text("Fit Sync")),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -56,14 +59,52 @@ class _HomePageState extends State<HomePage> {
 class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("Welcome to Your Health App!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          SizedBox(height: 20),
-          Text("Track your health & fitness easily!", style: TextStyle(fontSize: 16)),
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Welcome to Fit Sync!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text("Your daily health companion.", style: TextStyle(fontSize: 16)),
+            SizedBox(height: 20),
+            Text("Health Tips:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            _buildTipCard("Stay Hydrated", "Drink at least 8 glasses of water daily to keep your body hydrated."),
+            _buildTipCard("Eat Balanced Meals", "Include proteins, carbs, and healthy fats in your meals."),
+            _buildTipCard("Exercise Regularly", "Engage in at least 30 minutes of physical activity every day."),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text("View More Tips"),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text("Start Your Health Journey"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTipCard(String title, String description) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 5),
+            Text(description, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+          ],
+        ),
       ),
     );
   }
