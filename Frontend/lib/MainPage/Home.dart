@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
+import 'dart:async';
 import '../MainPage/HomeComponents/aichatbot.dart';
 import '../ProfileComponent/ProfilePage.dart';
 import '../MainPage/HomeComponents/articles.dart';
@@ -10,10 +13,10 @@ import 'HomeComponents/labreport.dart';
 import 'HomeComponents/NearHospitals.dart';
 import 'HomeComponents/Aboutus.dart';
 import 'HomeComponents/settings.dart';
-import 'package:fitsync/Step_Counter.dart';
+import 'package:fitsync/PortSection/ConfigFile.dart'; // For getSteps and submitSteps
 
 class HomePage extends StatefulWidget {
-  final Map<String, dynamic>? initialUserData; // Accept initialUserData
+  final Map<String, dynamic>? initialUserData;
   const HomePage({super.key, this.initialUserData});
 
   @override
@@ -42,6 +45,11 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = index;
       _pages[0] = HomeContent(selectedIndex: _selectedIndex, initialUserData: widget.initialUserData);
     });
+  }
+
+  void _onStepUpdate(int steps) {
+    // Callback for step updates, can be used to sync with other parts of the app if needed
+    print('Steps updated: $steps');
   }
 
   @override
@@ -179,7 +187,7 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatefulWidget {
   final int selectedIndex;
-  final Map<String, dynamic>? initialUserData; // Accept initialUserData
+  final Map<String, dynamic>? initialUserData;
   const HomeContent({super.key, required this.selectedIndex, this.initialUserData});
 
   @override
@@ -237,8 +245,15 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  void _onStepUpdate(int steps) {
+    // Handle step updates if needed in HomeContent
+    print('HomeContent steps updated: $steps');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final String userId = widget.initialUserData?['userId'] ?? '123456'; // Default userId if not available
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -289,12 +304,18 @@ class _HomeContentState extends State<HomeContent> {
                       'Your Health Companion',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 16, // Slightly smaller for consistency
+                        fontSize: 16,
                       ),
                     ),
                   ],
                 ),
               ),
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+            StepCounter(
+              userId: userId,
+              onStepUpdate: _onStepUpdate,
+              initialUserData: widget.initialUserData,
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             Column(
@@ -653,4 +674,212 @@ class News {
     urlToImage: json['urlToImage'],
     publishedAt: json['publishedAt'],
   );
+}
+
+// StepCounter Widget
+class StepCounter extends StatefulWidget {
+  final String userId;
+  final Function(int) onStepUpdate;
+  final Map<String, dynamic>? initialUserData;
+  const StepCounter({
+    super.key,
+    required this.userId,
+    required this.onStepUpdate,
+    this.initialUserData,
+  });
+
+  @override
+  _StepCounterState createState() => _StepCounterState();
+}
+
+class _StepCounterState extends State<StepCounter> {
+  int stepsTaken = 0;
+  int stepGoal = 1000;
+  bool isLoading = true;
+  StreamSubscription<StepCount>? _stepSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePedometer();
+    _fetchSteps();
+  }
+
+  Future<void> _initializePedometer() async {
+    var status = await Permission.activityRecognition.request();
+    if (status.isGranted) {
+      _stepSubscription = Pedometer.stepCountStream.listen(
+        _onStepCount,
+        onError: _onStepCountError,
+      );
+    } else {
+      print('Permission denied for activity recognition');
+      setState(() { isLoading = false; });
+    }
+  }
+
+  void _onStepCount(StepCount event) {
+    if (mounted) {
+      setState(() {
+        if (event.steps > stepsTaken) {
+          stepsTaken = event.steps;
+          widget.onStepUpdate(stepsTaken);
+          _submitSteps();
+        }
+      });
+    }
+  }
+
+  void _onStepCountError(Object error) {
+    if (mounted) {
+      print('Step counting error: $error');
+    }
+  }
+
+  Future<void> _fetchSteps() async {
+    try {
+      final response = await http.get(Uri.parse('$getSteps${widget.userId}'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          stepsTaken = data['stepsTaken'] ?? 0;
+          stepGoal = data['todayStepGoal'] ?? 1000;
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch steps: ${response.statusCode}');
+        setState(() { isLoading = false; });
+      }
+    } catch (e) {
+      print('Error fetching steps: $e');
+      setState(() { isLoading = false; });
+    }
+  }
+
+  Future<void> _submitSteps() async {
+    try {
+      final response = await http.post(
+        Uri.parse(submitSteps),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': widget.userId, 'stepsTaken': stepsTaken}),
+      );
+      if (response.statusCode == 201) {
+        print('Steps submitted successfully: $stepsTaken');
+      } else {
+        print('Failed to submit steps: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error submitting steps: $e');
+    }
+  }
+
+
+
+  @override
+  void dispose() {
+    _stepSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double progress = stepsTaken / stepGoal;
+    if (progress > 1) progress = 1;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.teal[50]!, Colors.white],
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+            children: [
+              const Text(
+                'Daily Step Goal',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "$stepsTaken",
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
+                      ),
+                    ),
+                    const Text(
+                      "Steps",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: const AlwaysStoppedAnimation(Colors.teal),
+                minHeight: 10,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '$stepsTaken / $stepGoal steps',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    // onTap: _resetSteps,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

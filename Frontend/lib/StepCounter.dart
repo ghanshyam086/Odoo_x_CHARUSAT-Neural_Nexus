@@ -196,7 +196,6 @@ class _StepCounterState extends State<StepCounter> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    // onTap: _resetSteps,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,

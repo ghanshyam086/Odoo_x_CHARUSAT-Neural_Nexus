@@ -177,11 +177,11 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Center(child: _buildProfileAvatar()),
           const SizedBox(height: 20),
-          StepCounter(
-            userId: userId,
-            onStepUpdate: _updateStreak,
-            initialUserData: userData,
-          ),
+          // StepCounter(
+          //   userId: userId,
+          //   onStepUpdate: _updateStreak,
+          //   initialUserData: userData,
+          // ),
           const SizedBox(height: 20),
           _buildStreakSection(),
           _buildInfoSection('Personal Info', [
