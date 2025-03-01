@@ -1,5 +1,5 @@
 // lib/PortSection/ConfigFile.dart
-const String baseUrl = 'http://172.16.218.244:3000/';
+const String baseUrl = 'http://192.168.11.24:3000/';
 const String registration = '${baseUrl}registration';
 const String login = '${baseUrl}login';
 const String addTodo = '${baseUrl}storeTodo';
