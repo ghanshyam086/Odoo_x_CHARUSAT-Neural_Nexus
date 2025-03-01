@@ -7,7 +7,7 @@ import '../MainPage/HomeComponents/articles.dart';
 import 'HomeComponents/news.dart';
 import 'HomeComponents/content.dart'; // Uncommented
 import 'HomeComponents/labreport.dart'; // Uncommented
-import 'HomeComponents/nearbydoctors.dart'; // Uncommented
+import 'HomeComponents/NearHospitals.dart'; // Uncommented
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
