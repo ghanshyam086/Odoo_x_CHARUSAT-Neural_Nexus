@@ -161,10 +161,7 @@ class _AIChatbotPageState extends State<AIChatbotPage> {
         ),
         backgroundColor: Colors.blue.shade900,
         elevation: 2,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+
       ),
       body: Container(
         decoration: BoxDecoration(
