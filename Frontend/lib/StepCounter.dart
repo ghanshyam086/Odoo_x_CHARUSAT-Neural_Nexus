@@ -104,13 +104,7 @@ class _StepCounterState extends State<StepCounter> {
     }
   }
 
-  void _resetSteps() {
-    setState(() {
-      stepsTaken = 0;
-    });
-    _submitSteps(); // Sync reset with server
-    widget.onStepUpdate(0); // Notify parent widget
-  }
+
 
   @override
   void dispose() {
@@ -202,24 +196,13 @@ class _StepCounterState extends State<StepCounter> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: _resetSteps,
+                    // onTap: _resetSteps,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 10,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.teal,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "Reset",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+
                     ),
                   ),
                 ],
