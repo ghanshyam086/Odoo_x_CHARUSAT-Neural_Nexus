@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../LoginSignupCompnent/LoginPage.dart';
-// import 'home.dart'; // Import HomePage
 
 class ProfilePage extends StatefulWidget {
-  final Map<String, dynamic>? initialUserData;
-  const ProfilePage({super.key, this.initialUserData});
+  const ProfilePage({super.key});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -23,40 +21,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      final userDataString = prefs.getString('user_data');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final userDataString = prefs.getString('user_data');
 
-      if (token == null) {
-        _navigateToLogin();
-        return;
-      }
-
-      setState(() {
-        if (widget.initialUserData != null) {
-          userData = Map<String, dynamic>.from(widget.initialUserData!);
-        } else if (userDataString != null && userDataString.isNotEmpty) {
-          try {
-            final decodedData = json.decode(userDataString);
-            if (decodedData is Map) {
-              userData = Map<String, dynamic>.from(decodedData);
-            }
-          } catch (e) {
-            print('Error decoding user data: $e');
-            _navigateToLogin();
-            return;
-          }
-        }
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading user data: $e');
-      setState(() {
-        isLoading = false;
-      });
+    if (token == null) {
       _navigateToLogin();
+      return;
     }
+
+    setState(() {
+      userData = userDataString != null ? json.decode(userDataString) : {};
+      isLoading = false;
+    });
   }
 
   void _navigateToLogin() {
@@ -66,17 +43,9 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _navigateToHome() {
-    // Navigator.pushReplacement(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => const HomePage()),
-    // );
-  }
-
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
+    await prefs.clear();
     _navigateToLogin();
   }
 
@@ -85,10 +54,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _navigateToHome, // Back to Home
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -100,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ? const Center(child: CircularProgressIndicator())
           : userData.isEmpty
           ? const Center(child: Text('No user data available'))
-          : SingleChildScrollView(
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +73,6 @@ class _ProfilePageState extends State<ProfilePage> {
             Center(
               child: CircleAvatar(
                 radius: 50,
-                backgroundColor: Theme.of(context).colorScheme.primary,
                 child: Text(
                   userData['name']?[0].toUpperCase() ?? 'U',
                   style: const TextStyle(fontSize: 40, color: Colors.white),
@@ -116,66 +80,11 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildInfoCard([
-              _buildInfoRow('Name', userData['name'] ?? 'N/A'),
-              _buildInfoRow('Email', userData['email'] ?? 'N/A'),
-              _buildInfoRow('Mobile', userData['mobile'] ?? 'N/A'),
-            ]),
-            const SizedBox(height: 16),
-            _buildInfoCard([
-              _buildInfoRow('Blood Group', userData['bloodGroup']?.toUpperCase() ?? 'N/A'),
-              _buildInfoRow('Height', '${userData['height'] ?? 0} cm'),
-              _buildInfoRow('Weight', '${userData['weight'] ?? 0} kg'),
-              _buildInfoRow('Age', '${userData['age'] ?? 0} years'),
-            ]),
-            const SizedBox(height: 16),
-            _buildInfoCard([
-              _buildInfoRow('Allergies', userData['allergies'] ?? 'None'),
-              _buildInfoRow('Medical Conditions', userData['medicalConditions'] ?? 'None'),
-              _buildInfoRow('Medications', userData['medications'] ?? 'None'),
-            ]),
+            Text('Name: ${userData['name'] ?? 'N/A'}'),
+            Text('Email: ${userData['email'] ?? 'N/A'}'),
+            Text('Mobile: ${userData['mobile'] ?? 'N/A'}'),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(List<Widget> children) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
       ),
     );
   }

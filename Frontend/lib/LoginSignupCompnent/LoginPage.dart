@@ -80,12 +80,12 @@ class _LoginPageState extends State<LoginPage> {
 
         if (mounted) {
           setState(() => _errorMessage = null);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProfilePage(initialUserData: user),
-            ),
-          );
+          // Navigator.pushReplacement(
+          //   context,
+          //   // MaterialPageRoute(
+          //   //   // builder: (context) => ProfilePage(initialUserData: user),
+          //   // ),
+          // );
         }
       } else {
         setState(() {
