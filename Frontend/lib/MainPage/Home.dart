@@ -5,9 +5,9 @@ import '../MainPage/HomeComponents/aichatbot.dart';
 import '../ProfileComponent/ProfilePage.dart';
 import '../MainPage/HomeComponents/articles.dart';
 import 'HomeComponents/news.dart';
-import 'HomeComponents/content.dart'; // Uncommented
-import 'HomeComponents/labreport.dart'; // Uncommented
-import 'HomeComponents/NearHospitals.dart'; // Uncommented, renamed to DoctorScreen for consistency
+import 'HomeComponents/content.dart';
+import 'HomeComponents/labreport.dart';
+import 'HomeComponents/NearHospitals.dart';
 import 'HomeComponents/Aboutus.dart';
 import 'HomeComponents/settings.dart';
 import 'package:fitsync/Step_Counter.dart';
@@ -20,106 +20,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Ensure this is properly declared as an int variable
+  int _selectedIndex = 0;
 
   final List<Widget> _pages = [
     const HomeContent(),
     const AIChatbotPage(),
     const ProfilePage(),
-    const ContentPage(), // Uncommented
-    const LabReportPage(), // Uncommented
+    const ContentPage(),
+    const LabReportPage(),
   ];
 
-  List<Article> _homeArticles = [];
-  List<News> _homeNews = [];
-  bool _isLoadingArticles = true;
-  bool _isLoadingNews = true;
-
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchHomeArticles();
-    _fetchHomeNews();
-  }
-
-  Future<void> _fetchHomeArticles() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            'https://newsapi.org/v2/everything?q=health+articles&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final articles = (data['articles'] as List)
-            .map((article) => Article.fromJson(article))
-            .toList();
-        setState(() {
-          _homeArticles = articles.take(3).toList(); // Limit to 2–3 articles
-          _isLoadingArticles = false;
-        });
-      } else {
-        throw Exception('Failed to load articles: ${response.statusCode}');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoadingArticles = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching articles: $e')),
-      );
-    }
-  }
-
-  Future<void> _fetchHomeNews() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            'https://newsapi.org/v2/everything?q=health&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final news = (data['articles'] as List)
-            .map((article) => News.fromJson(article))
-            .toList();
-        setState(() {
-          _homeNews = news.take(3).toList(); // Limit to 2–3 news items
-          _isLoadingNews = false;
-        });
-      } else {
-        throw Exception('Failed to load news: ${response.statusCode}');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoadingNews = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching news: $e')),
-      );
-    }
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Prevent exiting the app directly; return to home instead
         if (_selectedIndex != 0) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-          return false; // Prevent back navigation
+          setState(() => _selectedIndex = 0);
+          return false;
         }
-        return true; // Allow app exit from home
+        return true;
       },
-
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -206,108 +130,18 @@ class _HomePageState extends State<HomePage> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.home,
-                    title: 'Home',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedIndex = 0;
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.chat,
-                    title: 'AI Chat',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedIndex = 1;
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.person,
-                    title: 'Profile',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedIndex = 2;
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.video_library,
-                    title: 'Content',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedIndex = 3;
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.report,
-                    title: 'Lab Reports',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedIndex = 4;
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.article,
-                    title: 'Articles',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage()));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.newspaper,
-                    title: 'News',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage()));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.location_on,
-                    title: 'Nearby Doctors',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen()));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.info,
-                    title: 'About Us',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.settings,
-                    title: 'Settings',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
-                    },
-                  ),
-                  Divider(color: Colors.grey),
-                  // Removed logout-related code
+                  _buildDrawerItem(context, Icons.home, 'Home', () => setState(() => _selectedIndex = 0)),
+                  _buildDrawerItem(context, Icons.chat, 'AI Chat', () => setState(() => _selectedIndex = 1)),
+                  _buildDrawerItem(context, Icons.person, 'Profile', () => setState(() => _selectedIndex = 2)),
+                  _buildDrawerItem(context, Icons.video_library, 'Content', () => setState(() => _selectedIndex = 3)),
+                  _buildDrawerItem(context, Icons.report, 'Lab Reports', () => setState(() => _selectedIndex = 4)),
+                  _buildDrawerItem(context, Icons.article, 'Articles', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage()))),
+                  _buildDrawerItem(context, Icons.newspaper, 'News', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage()))),
+                  _buildDrawerItem(context, Icons.location_on, 'Nearby Doctors', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen()))),
+                  _buildDrawerItem(context, Icons.info, 'About Us', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()))),
+                  _buildDrawerItem(context, Icons.settings, 'Settings', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()))),
+                  // _buildDrawerItem(context, Icons.directions_run, 'Step Counter', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StepCounter()))),
+                  const Divider(color: Colors.grey),
                 ],
               ),
             ),
@@ -317,20 +151,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDrawerItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color? color,
-  }) {
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Colors.blue.shade900, size: MediaQuery.of(context).size.width * 0.07),
+      leading: Icon(icon, color: Colors.blue.shade900, size: MediaQuery.of(context).size.width * 0.07),
       title: Text(
         title,
-        style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.045, color: color ?? Colors.black87, fontWeight: FontWeight.w500),
+        style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.045, color: Colors.black87, fontWeight: FontWeight.w500),
       ),
-      onTap: onTap,
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
       contentPadding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
       hoverColor: Colors.blue.shade100.withOpacity(0.2),
     );
@@ -345,6 +176,11 @@ class HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<HomeContent> {
+  List<Article> _homeArticles = [];
+  List<News> _homeNews = [];
+  bool _isLoadingArticles = true;
+  bool _isLoadingNews = true;
+
   @override
   void initState() {
     super.initState();
@@ -354,66 +190,41 @@ class _HomeContentState extends State<HomeContent> {
 
   Future<void> _fetchHomeArticles() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-            'https://newsapi.org/v2/everything?q=health+articles&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'),
-      );
-
+      final response = await http.get(Uri.parse(
+          'https://newsapi.org/v2/everything?q=health+articles&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final articles = (data['articles'] as List)
-            .map((article) => Article.fromJson(article))
-            .toList();
         setState(() {
-          _homeArticles = articles.take(3).toList();
+          _homeArticles = (data['articles'] as List).map((article) => Article.fromJson(article)).take(3).toList();
           _isLoadingArticles = false;
         });
       } else {
         throw Exception('Failed to load articles: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() {
-        _isLoadingArticles = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching articles: $e')),
-      );
+      setState(() => _isLoadingArticles = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error fetching articles: $e')));
     }
   }
 
   Future<void> _fetchHomeNews() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-            'https://newsapi.org/v2/everything?q=health&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'),
-      );
-
+      final response = await http.get(Uri.parse(
+          'https://newsapi.org/v2/everything?q=health&language=en&sortBy=publishedAt&apiKey=8ee2794cd73a41b68c8d3c399d5710c4'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final news = (data['articles'] as List)
-            .map((article) => News.fromJson(article))
-            .toList();
         setState(() {
-          _homeNews = news.take(3).toList();
+          _homeNews = (data['articles'] as List).map((article) => News.fromJson(article)).take(3).toList();
           _isLoadingNews = false;
         });
       } else {
         throw Exception('Failed to load news: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() {
-        _isLoadingNews = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching news: $e')),
-      );
+      setState(() => _isLoadingNews = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error fetching news: $e')));
     }
   }
-
-  List<Article> _homeArticles = [];
-  List<News> _homeNews = [];
-  bool _isLoadingArticles = true;
-  bool _isLoadingNews = true;
 
   @override
   Widget build(BuildContext context) {
@@ -446,62 +257,36 @@ class _HomeContentState extends State<HomeContent> {
                   opacity: 0.3,
                 ),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
+                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4)),
                 ],
               ),
-              child: Padding(
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '        Welcome to Fit Sync         ',
+                      'Welcome to Fit Sync',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: MediaQuery.of(context).size.width * 0.07,
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.5),
-                            offset: const Offset(1, 1),
-                            blurRadius: 4,
-                          ),
-                        ],
+                        shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)],
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-            // Health Summary with Premium Card Design
-            Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: Colors.blue.shade100, width: 1),
-              ),
-              color: Colors.white,
-              child: Padding(
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.035),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSummaryItem(context, "Appointments", "2", Icons.calendar_today),
-                    _buildSummaryItem(context, "Medications", "3", Icons.medication),
-                    _buildSummaryItem(context, "Tests", "1", Icons.science),
+                    Text(
+                      'Your Health Companion',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Healthcare Services with 3x2 Grid
+            // Healthcare Services with Smaller, Colorful Buttons
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -512,36 +297,28 @@ class _HomeContentState extends State<HomeContent> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                     letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        offset: const Offset(1, 1),
-                        blurRadius: 3,
-                      ),
-                    ],
+                    shadows: [Shadow(color: Colors.blue.withOpacity(0.3), blurRadius: 3)],
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.015),
                 Card(
                   elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                   color: Colors.white,
                   child: Padding(
                     padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.035),
                     child: GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 3,
+                      crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
                       crossAxisSpacing: MediaQuery.of(context).size.width * 0.025,
                       mainAxisSpacing: MediaQuery.of(context).size.height * 0.015,
-                      childAspectRatio: 0.9,
+                      childAspectRatio: 1.5, // Adjusted for even smaller buttons
                       children: [
-                        _buildHealthButton(context, "AI Chat", Icons.chat, Colors.green.shade300, 0),
-                        _buildHealthButton(context, "Profile", Icons.person, Colors.blue.shade300, 1),
-                        _buildHealthButton(context, "Content", Icons.video_library, Colors.green.shade300, 2),
-                        _buildHealthButton(context, "Lab Reports", Icons.report, Colors.blue.shade300, 3),
+                        _buildHealthButton(context, "AI Chat", Icons.chat, Colors.green.shade100, 0),
+                        _buildHealthButton(context, "Profile", Icons.person, Colors.blue.shade100, 1),
+                        _buildHealthButton(context, "Content", Icons.video_library, Colors.green.shade100, 2),
+                        _buildHealthButton(context, "Lab Reports", Icons.report, Colors.blue.shade100, 3),
                       ],
                     ),
                   ),
@@ -560,21 +337,13 @@ class _HomeContentState extends State<HomeContent> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                     letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.green.withOpacity(0.3),
-                        offset: const Offset(1, 1),
-                        blurRadius: 3,
-                      ),
-                    ],
+                    shadows: [Shadow(color: Colors.green.withOpacity(0.3), blurRadius: 3)],
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.015),
                 Card(
                   elevation: 6,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                   color: Colors.green.shade50,
                   child: Padding(
                     padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.035),
@@ -595,7 +364,7 @@ class _HomeContentState extends State<HomeContent> {
               ],
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Health News with Fetched Articles (Images Included)
+            // Health News
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -606,13 +375,7 @@ class _HomeContentState extends State<HomeContent> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                     letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        offset: const Offset(1, 1),
-                        blurRadius: 3,
-                      ),
-                    ],
+                    shadows: [Shadow(color: Colors.blue.withOpacity(0.3), blurRadius: 3)],
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.015),
@@ -620,15 +383,11 @@ class _HomeContentState extends State<HomeContent> {
                     ? const Center(child: CircularProgressIndicator(color: Colors.blue))
                     : _homeNews.isEmpty
                     ? const Center(child: Text('No health news available'))
-                    : Column(
-                  children: _homeNews.map((news) {
-                    return _buildNewsCard(context, news);
-                  }).toList(),
-                ),
+                    : Column(children: _homeNews.map((news) => _buildNewsCard(context, news)).toList()),
               ],
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Featured Articles with Fetched Articles (Text Only)
+            // Featured Articles
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -639,13 +398,7 @@ class _HomeContentState extends State<HomeContent> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                     letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.purple.withOpacity(0.3),
-                        offset: const Offset(1, 1),
-                        blurRadius: 3,
-                      ),
-                    ],
+                    shadows: [Shadow(color: Colors.purple.withOpacity(0.3), blurRadius: 3)],
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.015),
@@ -653,11 +406,7 @@ class _HomeContentState extends State<HomeContent> {
                     ? const Center(child: CircularProgressIndicator(color: Colors.purple))
                     : _homeArticles.isEmpty
                     ? const Center(child: Text('No articles available'))
-                    : Column(
-                  children: _homeArticles.map((article) {
-                    return _buildArticleCard(context, article);
-                  }).toList(),
-                ),
+                    : Column(children: _homeArticles.map((article) => _buildArticleCard(context, article)).toList()),
               ],
             ),
           ],
@@ -666,64 +415,23 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSummaryItem(BuildContext context, String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, size: MediaQuery.of(context).size.width * 0.07, color: Colors.blue.shade900),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.0075),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: MediaQuery.of(context).size.width * 0.045,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-            shadows: [
-              Shadow(
-                color: Colors.blue.withOpacity(0.2),
-                offset: const Offset(0, 1),
-                blurRadius: 2,
-              ),
-            ],
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: MediaQuery.of(context).size.width * 0.04,
-            color: Colors.grey.shade600,
-            shadows: [
-              Shadow(
-                color: Colors.grey.withOpacity(0.2),
-                offset: const Offset(0, 1),
-                blurRadius: 2,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHealthButton(BuildContext context, String label, IconData icon, Color color, int index) {
+  Widget _buildHealthButton(BuildContext context, String label, IconData icon, Color defaultColor, int index) {
     bool isSelected = _selectedIndex == index;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue.shade900 : color,
+        backgroundColor: isSelected ? Colors.blue.shade900 : defaultColor,
         foregroundColor: isSelected ? Colors.white : Colors.black87,
         padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.02,
-          horizontal: MediaQuery.of(context).size.width * 0.02,
+          vertical: MediaQuery.of(context).size.height * 0.01, // Even smaller
+          horizontal: MediaQuery.of(context).size.width * 0.01, // Even smaller
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: isSelected ? Colors.blue.shade200 : Colors.transparent, width: 1),
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: isSelected ? Colors.blue.shade900 : Colors.grey.shade300, width: 1),
         ),
-        elevation: isSelected ? 8 : 4,
+        elevation: isSelected ? 4 : 2,
       ),
       onPressed: () {
-        // setState(() {
-        //   _selectedIndex = index;
-        // });
         switch (label) {
           case "AI Chat":
             Navigator.push(context, MaterialPageRoute(builder: (_) => const AIChatbotPage()));
@@ -744,24 +452,18 @@ class _HomeContentState extends State<HomeContent> {
         children: [
           Icon(
             icon,
-            size: MediaQuery.of(context).size.width * 0.07,
+            size: MediaQuery.of(context).size.width * 0.04, // Smaller icon
             color: isSelected ? Colors.white : Colors.black87,
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.0075),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.003),
           Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.035,
+              fontSize: MediaQuery.of(context).size.width * 0.025, // Even smaller text
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.black87,
-              shadows: [
-                Shadow(
-                  color: isSelected ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.2),
-                  offset: const Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
+              shadows: [Shadow(color: isSelected ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.2), blurRadius: 1)],
             ),
           ),
         ],
@@ -792,14 +494,9 @@ class _HomeContentState extends State<HomeContent> {
     return Card(
       elevation: 6,
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ArticlesPage()),
-        ),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage())),
         borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -812,13 +509,7 @@ class _HomeContentState extends State<HomeContent> {
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Colors.black87,
-                  shadows: [
-                    Shadow(
-                      color: Colors.purple.withOpacity(0.2),
-                      offset: const Offset(0, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
+                  shadows: [Shadow(color: Colors.purple.withOpacity(0.2), blurRadius: 2)],
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -829,13 +520,7 @@ class _HomeContentState extends State<HomeContent> {
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade700,
-                  shadows: [
-                    Shadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      offset: const Offset(0, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
+                  shadows: [Shadow(color: Colors.grey.withOpacity(0.2), blurRadius: 2)],
                 ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -851,14 +536,9 @@ class _HomeContentState extends State<HomeContent> {
     return Card(
       elevation: 6,
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const NewsPage()),
-        ),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage())),
         borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -870,19 +550,19 @@ class _HomeContentState extends State<HomeContent> {
                 child: news.urlToImage != null && news.urlToImage!.isNotEmpty
                     ? Image.network(
                   news.urlToImage!,
-                  width: 100,
-                  height: 100,
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  height: MediaQuery.of(context).size.width * 0.25,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
-                    width: 100,
-                    height: 100,
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    height: MediaQuery.of(context).size.width * 0.25,
                     color: Colors.grey.shade300,
                     child: const Icon(Icons.image_not_supported, color: Colors.grey),
                   ),
                 )
                     : Container(
-                  width: 100,
-                  height: 100,
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  height: MediaQuery.of(context).size.width * 0.25,
                   color: Colors.grey.shade300,
                   child: const Icon(Icons.health_and_safety, color: Colors.blue, size: 40),
                 ),
@@ -898,13 +578,7 @@ class _HomeContentState extends State<HomeContent> {
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.black87,
-                        shadows: [
-                          Shadow(
-                            color: Colors.blue.withOpacity(0.2),
-                            offset: const Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
+                        shadows: [Shadow(color: Colors.blue.withOpacity(0.2), blurRadius: 2)],
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -915,13 +589,7 @@ class _HomeContentState extends State<HomeContent> {
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
-                        shadows: [
-                          Shadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            offset: const Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
+                        shadows: [Shadow(color: Colors.grey.withOpacity(0.2), blurRadius: 2)],
                       ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -933,13 +601,7 @@ class _HomeContentState extends State<HomeContent> {
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
-                          shadows: [
-                            Shadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              offset: const Offset(0, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
+                          shadows: [Shadow(color: Colors.grey.withOpacity(0.2), blurRadius: 2)],
                         ),
                       ),
                     ],
@@ -967,37 +629,24 @@ class _selectedIndex {
 }
 
 class Article {
-  final String title;
-  final String description;
-  final String url;
-
+  final String title, description, url;
   Article({required this.title, required this.description, required this.url});
-
-  factory Article.fromJson(Map<String, dynamic> json) {
-    return Article(
-      title: json['title'] ?? 'No title',
-      description: json['description'] ?? 'No description available',
-      url: json['url'] ?? '',
-    );
-  }
+  factory Article.fromJson(Map<String, dynamic> json) => Article(
+    title: json['title'] ?? 'No title',
+    description: json['description'] ?? 'No description available',
+    url: json['url'] ?? '',
+  );
 }
 
 class News {
-  final String title;
-  final String description;
-  final String url;
-  final String? urlToImage;
-  final String? publishedAt;
-
+  final String title, description, url;
+  final String? urlToImage, publishedAt;
   News({required this.title, required this.description, required this.url, this.urlToImage, this.publishedAt});
-
-  factory News.fromJson(Map<String, dynamic> json) {
-    return News(
-      title: json['title'] ?? 'No title',
-      description: json['description'] ?? 'No description available',
-      url: json['url'] ?? '',
-      urlToImage: json['urlToImage'],
-      publishedAt: json['publishedAt'],
-    );
-  }
+  factory News.fromJson(Map<String, dynamic> json) => News(
+    title: json['title'] ?? 'No title',
+    description: json['description'] ?? 'No description available',
+    url: json['url'] ?? '',
+    urlToImage: json['urlToImage'],
+    publishedAt: json['publishedAt'],
+  );
 }
