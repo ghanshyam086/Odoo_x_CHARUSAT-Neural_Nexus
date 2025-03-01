@@ -1,11 +1,13 @@
+// lib/ProfileComponent/ProfilePage.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:http/http.dart' as http; // Import http package
-import '../LoginSignupCompnent/LoginPage.dart';
-import '../MainPage/Home.dart';
-import 'package:fitsync/StepCounter.dart'; // Ensure this path matches your project structure
+import 'package:http/http.dart' as http;
+import '../../LoginSignupCompnent/LoginPage.dart';
+import '../../MainPage/Home.dart';
+import 'package:fitsync/StepCounter.dart'; // Adjust if StepCounter.dart path differs
+import '../../PortSection/ConfigFile.dart';
 
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic>? initialUserData;
@@ -19,7 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic> userData = {};
   bool isLoading = true;
   int streakCount = 0;
-  String userId = "123456"; // Hardcoded for demo; replace with actual user ID logic
+  String userId = "123456";
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
         } else if (userDataString != null && userDataString.isNotEmpty) {
           userData = Map<String, dynamic>.from(json.decode(userDataString));
         }
-        userId = userData['userId'] ?? "123456"; // Get userId from userData or default
+        userId = userData['userId'] ?? "123456";
         isLoading = false;
       });
     } catch (e) {
@@ -57,7 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchStreaks() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/streaks/$userId'));
+      final response = await http.get(Uri.parse('$getStreaks$userId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -93,8 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _updateStreak(int stepsTaken) async {
-    // This will be handled by StepCounter now via API
-    await _fetchStreaks(); // Refresh streaks after update
+    await _fetchStreaks();
   }
 
   @override
@@ -160,7 +161,11 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Center(child: _buildProfileAvatar()),
           const SizedBox(height: 20),
-          StepCounter(userId: userId, onStepUpdate: _updateStreak), // Pass userId
+          StepCounter(
+            userId: userId,
+            onStepUpdate: _updateStreak,
+            initialUserData: userData, // Pass userData (updated from initialUserData)
+          ),
           const SizedBox(height: 20),
           _buildStreakSection(),
           _buildInfoSection('Personal Info', [
@@ -182,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return CircleAvatar(
       radius: 70,
       backgroundImage: userData['photo'] != null
-          ? CachedNetworkImageProvider('http://172.16.218.120:3000/${userData['photo']}')
+          ? CachedNetworkImageProvider('$imageBaseUrl${userData['photo']}')
           : null,
       child: userData['photo'] == null
           ? Text(userData['name']?[0].toUpperCase() ?? 'U', style: const TextStyle(fontSize: 50, color: Colors.white))

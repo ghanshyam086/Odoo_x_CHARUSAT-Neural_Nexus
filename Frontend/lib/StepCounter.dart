@@ -1,11 +1,20 @@
+// lib/StepCounter.dart (assuming fitsync package structure)
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:fitsync/PortSection/ConfigFile.dart';
+import '../MainPage/Home.dart'; // Import HomePage for navigation
 
 class StepCounter extends StatefulWidget {
   final String userId;
   final Function(int) onStepUpdate;
-  const StepCounter({super.key, required this.userId, required this.onStepUpdate});
+  final Map<String, dynamic>? initialUserData; // Nullable to match ProfilePage
+  const StepCounter({
+    super.key,
+    required this.userId,
+    required this.onStepUpdate,
+    this.initialUserData,
+  });
 
   @override
   _StepCounterState createState() => _StepCounterState();
@@ -25,7 +34,7 @@ class _StepCounterState extends State<StepCounter> {
 
   Future<void> _fetchSteps() async {
     try {
-      final response = await http.get(Uri.parse('http://172.16.218.120:3000/api/steps/${widget.userId}'));
+      final response = await http.get(Uri.parse('$getSteps${widget.userId}'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -47,7 +56,7 @@ class _StepCounterState extends State<StepCounter> {
     final steps = int.tryParse(_controller.text) ?? 0;
     try {
       final response = await http.post(
-        Uri.parse('http://172.16.218.120:3000/api/steps'),
+        Uri.parse(submitSteps),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': widget.userId, 'stepsTaken': steps}),
       );
@@ -55,8 +64,17 @@ class _StepCounterState extends State<StepCounter> {
         setState(() {
           stepsTaken = steps;
         });
-        widget.onStepUpdate(steps); // Notify ProfilePage to refresh streaks
+        widget.onStepUpdate(steps);
         _controller.clear();
+        // Navigate back to HomePage with initialUserData if provided
+        if (widget.initialUserData != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(initialUserData: widget.initialUserData),
+            ),
+          );
+        }
       } else {
         print('Failed to submit steps: ${response.statusCode}');
       }

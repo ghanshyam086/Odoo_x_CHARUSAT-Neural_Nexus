@@ -13,7 +13,8 @@ import 'HomeComponents/settings.dart';
 import 'package:fitsync/Step_Counter.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final Map<String, dynamic>? initialUserData; // Accept initialUserData
+  const HomePage({super.key, this.initialUserData});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -22,16 +23,25 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomeContent(),
-    const AIChatbotPage(),
-    const ProfilePage(),
-    const ContentPage(),
-    const LabReportPage(),
-  ];
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeContent(selectedIndex: _selectedIndex, initialUserData: widget.initialUserData),
+      const AIChatbotPage(),
+      ProfilePage(initialUserData: widget.initialUserData),
+      const ContentPage(),
+      const LabReportPage(),
+    ];
+  }
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      _pages[0] = HomeContent(selectedIndex: _selectedIndex, initialUserData: widget.initialUserData);
+    });
   }
 
   @override
@@ -118,9 +128,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                    const Text(
-                      'Fit Sync User',
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    Text(
+                      widget.initialUserData?['name'] ?? 'Fit Sync User',
+                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -140,7 +150,6 @@ class _HomePageState extends State<HomePage> {
                   _buildDrawerItem(context, Icons.location_on, 'Nearby Doctors', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen()))),
                   _buildDrawerItem(context, Icons.info, 'About Us', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()))),
                   _buildDrawerItem(context, Icons.settings, 'Settings', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()))),
-                  // _buildDrawerItem(context, Icons.directions_run, 'Step Counter', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StepCounter()))),
                   const Divider(color: Colors.grey),
                 ],
               ),
@@ -169,7 +178,9 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeContent extends StatefulWidget {
-  const HomeContent({super.key});
+  final int selectedIndex;
+  final Map<String, dynamic>? initialUserData; // Accept initialUserData
+  const HomeContent({super.key, required this.selectedIndex, this.initialUserData});
 
   @override
   _HomeContentState createState() => _HomeContentState();
@@ -241,7 +252,6 @@ class _HomeContentState extends State<HomeContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Enhanced Header
             Container(
               height: MediaQuery.of(context).size.height * 0.25,
               decoration: BoxDecoration(
@@ -265,20 +275,21 @@ class _HomeContentState extends State<HomeContent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Welcome to Fit Sync',
+                      'Welcome to Fit Sync, ${widget.initialUserData?['name'] ?? 'User'}',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: MediaQuery.of(context).size.width * 0.07,
                         fontWeight: FontWeight.bold,
                         shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)],
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                    Text(
+                    const Text(
                       'Your Health Companion',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                        fontSize: 16, // Slightly smaller for consistency
                       ),
                     ),
                   ],
@@ -286,7 +297,6 @@ class _HomeContentState extends State<HomeContent> {
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Healthcare Services with Smaller, Colorful Buttons
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -313,12 +323,12 @@ class _HomeContentState extends State<HomeContent> {
                       crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
                       crossAxisSpacing: MediaQuery.of(context).size.width * 0.025,
                       mainAxisSpacing: MediaQuery.of(context).size.height * 0.015,
-                      childAspectRatio: 1.5, // Adjusted for even smaller buttons
+                      childAspectRatio: 1.5,
                       children: [
-                        _buildHealthButton(context, "AI Chat", Icons.chat, Colors.green.shade100, 0),
-                        _buildHealthButton(context, "Profile", Icons.person, Colors.blue.shade100, 1),
-                        _buildHealthButton(context, "Content", Icons.video_library, Colors.green.shade100, 2),
-                        _buildHealthButton(context, "Lab Reports", Icons.report, Colors.blue.shade100, 3),
+                        _buildHealthButton(context, "AI Chat", Icons.chat, Colors.green.shade100, 1),
+                        _buildHealthButton(context, "Profile", Icons.person, Colors.blue.shade100, 2),
+                        _buildHealthButton(context, "Content", Icons.video_library, Colors.green.shade100, 3),
+                        _buildHealthButton(context, "Lab Reports", Icons.report, Colors.blue.shade100, 4),
                       ],
                     ),
                   ),
@@ -326,7 +336,6 @@ class _HomeContentState extends State<HomeContent> {
               ],
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Daily Health Tips
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -364,7 +373,6 @@ class _HomeContentState extends State<HomeContent> {
               ],
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Health News
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -387,7 +395,6 @@ class _HomeContentState extends State<HomeContent> {
               ],
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            // Featured Articles
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -416,14 +423,14 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildHealthButton(BuildContext context, String label, IconData icon, Color defaultColor, int index) {
-    bool isSelected = _selectedIndex == index;
+    bool isSelected = widget.selectedIndex == index;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected ? Colors.blue.shade900 : defaultColor,
         foregroundColor: isSelected ? Colors.white : Colors.black87,
         padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.01, // Even smaller
-          horizontal: MediaQuery.of(context).size.width * 0.01, // Even smaller
+          vertical: MediaQuery.of(context).size.height * 0.01,
+          horizontal: MediaQuery.of(context).size.width * 0.01,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -437,7 +444,7 @@ class _HomeContentState extends State<HomeContent> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const AIChatbotPage()));
             break;
           case "Profile":
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage(initialUserData: widget.initialUserData)));
             break;
           case "Content":
             Navigator.push(context, MaterialPageRoute(builder: (_) => const ContentPage()));
@@ -452,7 +459,7 @@ class _HomeContentState extends State<HomeContent> {
         children: [
           Icon(
             icon,
-            size: MediaQuery.of(context).size.width * 0.04, // Smaller icon
+            size: MediaQuery.of(context).size.width * 0.04,
             color: isSelected ? Colors.white : Colors.black87,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.003),
@@ -460,7 +467,7 @@ class _HomeContentState extends State<HomeContent> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.025, // Even smaller text
+              fontSize: MediaQuery.of(context).size.width * 0.025,
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.black87,
               shadows: [Shadow(color: isSelected ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.2), blurRadius: 1)],
@@ -623,9 +630,6 @@ class _HomeContentState extends State<HomeContent> {
       return 'Unknown';
     }
   }
-}
-
-class _selectedIndex {
 }
 
 class Article {
