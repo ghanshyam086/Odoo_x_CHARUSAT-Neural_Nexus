@@ -5,6 +5,7 @@ import 'package:fitsync/StepCounter.dart';
 import './LoginSignupCompnent/LoginPage.dart';
 import 'hospital_finder/hospital_finder_screen.dart';
 import 'package:fitsync/Step_Counter.dart';
+import 'package:fitsync/StepCounter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const StepCounterApp(), // HomePage as the root screen
+      home: const LoginPage(), // HomePage as the root screen
     );
   }
 }
