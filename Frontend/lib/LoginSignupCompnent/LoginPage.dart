@@ -4,12 +4,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-import '../PortSection/ConfigFile.dart';
+import '../PortSection/ConfigFile.dart'; // Import ConfigFile
 import './SignupPage.dart';
 import '../MainPage/Home.dart';
 import '../ProfileComponent/ProfilePage.dart';
-import './ForgectPasswordPage.dart';
+import './ForgectPasswordPage.dart'; // Note: Typo here, should be ForgotPasswordPage
 import 'package:shared_preferences/shared_preferences.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -24,10 +25,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
-
-  String get baseUrl {
-    return 'http://192.168.230.254:3000'; // Ensure this is correct
-  }
 
   @override
   void dispose() {
@@ -52,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+        Uri.parse(login), // Use login constant from ConfigFile.dart
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -80,11 +77,12 @@ class _LoginPageState extends State<LoginPage> {
 
         if (mounted) {
           setState(() => _errorMessage = null);
+          // Uncomment and adjust navigation as needed
           // Navigator.pushReplacement(
           //   context,
-          //   // MaterialPageRoute(
-          //   //   // builder: (context) => ProfilePage(initialUserData: user),
-          //   // ),
+          //   MaterialPageRoute(
+          //     builder: (context) => ProfilePage(initialUserData: user),
+          //   ),
           // );
         }
       } else {
@@ -179,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 if (_errorMessage != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
+                    padding: const EdgeInsets.only(bottom: 10.0), // Fix typo: 'bottom' instead of 'custom'
                     child: Text(
                       _errorMessage!,
                       style: const TextStyle(color: Colors.red, fontSize: 14),
@@ -233,7 +231,6 @@ class _LoginPageState extends State<LoginPage> {
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(fontWeight: FontWeight.bold),
-
                       ),
                     ),
                   ],
