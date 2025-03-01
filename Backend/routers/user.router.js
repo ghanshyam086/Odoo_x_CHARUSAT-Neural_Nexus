@@ -1,12 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const {
-  createOrUpdateProfile,
-  getProfile,
-} = require('../controllers/user.controller'); // Verify this path
 
-// Routes
-router.post('/profile', createOrUpdateProfile); // This is line 6 where the error occurs
-router.get('/profile/:email', getProfile);
+const router = require("express").Router();
+const UserController = require("../controllers/user.controller");
+
+
+router.post('/registration', UserController.register);
+router.post('/login', UserController.login);
+router.get('/user/:email', UserController.getUserDataByEmail);
 
 module.exports = router;
