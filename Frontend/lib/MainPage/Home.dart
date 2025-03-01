@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> {
           ),
           IconButton(
             icon: const Icon(Icons.location_on, color: Colors.white),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctorsPage())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen())),
             tooltip: 'Nearby Doctors',
           ),
         ],
@@ -257,7 +257,7 @@ class _HomePageState extends State<HomePage> {
                     title: 'Nearby Doctors',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyDoctorsPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen()));
                     },
                   ),
                   const Divider(color: Colors.grey),
