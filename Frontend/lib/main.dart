@@ -2,6 +2,7 @@ import 'package:fitsync/MainPage/Home.dart';
 import 'package:flutter/material.dart';
 import './LoginSignupCompnent/LoginPage.dart';
 import './MainPage/Home.dart';
+import 'hospital_finder/hospital_finder_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: HomePage()
+      home: const HomePage()
     );
   }
 }
