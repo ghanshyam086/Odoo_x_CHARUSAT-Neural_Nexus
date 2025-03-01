@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import './LoginSignupComponenent/Login';
-import 'home.dart'; // Import HomePage
+import '../LoginSignupCompnent/LoginPage.dart';
+import '../MainPage/Home.dart'; // Import HomePage
 
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic>? initialUserData;
@@ -83,55 +83,57 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Fit Sync")),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _navigateToHome, // Back to Home
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : userData.isEmpty
+          ? const Center(child: Text('No user data available'))
+          : SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.green),
-              child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 24)),
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                child: Text(
+                  userData['name']?[0].toUpperCase() ?? 'U',
+                  style: const TextStyle(fontSize: 40, color: Colors.white),
+                ),
+              ),
             ),
-            ListTile(
-              leading: Icon(Icons.chat),
-              title: Text("AI Chat Bot"),
-              onTap: () {
-                setState(() {
-                  _currentIndex = 1;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.description),
-              title: Text("Lab Report"),
-              onTap: () {
-                setState(() {
-                  _currentIndex = 2;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.library_books),
-              title: Text("Health Contents"),
-              onTap: () {
-                setState(() {
-                  _currentIndex = 3;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text("Profile"),
-              onTap: () {
-                setState(() {
-                  _currentIndex = 4;
-                });
-                Navigator.pop(context);
-              },
-            ),
+            const SizedBox(height: 20),
+            _buildInfoCard([
+              _buildInfoRow('Name', userData['name'] ?? 'N/A'),
+              _buildInfoRow('Email', userData['email'] ?? 'N/A'),
+              _buildInfoRow('Mobile', userData['mobile'] ?? 'N/A'),
+            ]),
+            const SizedBox(height: 16),
+            _buildInfoCard([
+              _buildInfoRow('Blood Group', userData['bloodGroup']?.toUpperCase() ?? 'N/A'),
+              _buildInfoRow('Height', '${userData['height'] ?? 0} cm'),
+              _buildInfoRow('Weight', '${userData['weight'] ?? 0} kg'),
+              _buildInfoRow('Age', '${userData['age'] ?? 0} years'),
+            ]),
+            const SizedBox(height: 16),
+            _buildInfoCard([
+              _buildInfoRow('Allergies', userData['allergies'] ?? 'None'),
+              _buildInfoRow('Medical Conditions', userData['medicalConditions'] ?? 'None'),
+              _buildInfoRow('Medications', userData['medications'] ?? 'None'),
+            ]),
           ],
         ),
       ),
