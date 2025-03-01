@@ -23,18 +23,30 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    DashboardPage(),
-    WorkoutsPage(),
-    DietPlansPage(),
-    ProfilePage(),
-  ];
+  // final List<Widget> _pages = [
+  //   DashboardPage(),
+  //   AIChatBotPage(),
+  //   LabReportPage(),
+  //   HealthContentsPage(),
+  //   ProfilePage(),
+  // ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Fit Sync")),
-      body: _pages[_currentIndex],
+      appBar: AppBar(
+        title: const Text("Fit Sync"),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
+      ),
+      drawer: _buildDrawer(),
+      // body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
@@ -45,88 +57,149 @@ class _HomePageState extends State<HomePage> {
             _currentIndex = index;
           });
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
-          BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: "Workouts"),
-          BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu), label: "Diet Plans"),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "AI Chat Bot"),
+          BottomNavigationBarItem(icon: Icon(Icons.description), label: "Lab Report"),
+          BottomNavigationBarItem(icon: Icon(Icons.library_books), label: "Health Contents"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            decoration: BoxDecoration(color: Colors.green),
+            accountName: const Text("User Name", style: TextStyle(fontSize: 18)),
+            accountEmail: const Text("user@example.com"),
+            currentAccountPicture: const CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, size: 40, color: Colors.green),
+            ),
+          ),
+          _buildDrawerItem(Icons.info, "About Us", () {}),
+          _buildDrawerItem(Icons.edit, "Edit Profile", () {
+            setState(() => _currentIndex = 4);
+            Navigator.pop(context);
+          }),
+          _buildDrawerItem(Icons.settings, "Settings", () {}),
+          _buildDrawerItem(Icons.favorite, "Health Tips", () {
+            _showHealthTipsDialog(context);
+          }),
+          const Divider(),
+          _buildDrawerItem(Icons.logout, "Logout", () {
+            _showLogoutDialog(context);
+          }, color: Colors.red),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap, {Color? color}) {
+    return ListTile(
+      leading: Icon(icon, color: color ?? Colors.green),
+      title: Text(title, style: TextStyle(color: color ?? Colors.black)),
+      onTap: onTap,
+    );
+  }
+
+  void _showHealthTipsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Health Tips'),
+        content: const Text('Stay hydrated, eat a balanced diet, and exercise regularly for better health!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Navigate to LoginPage (uncomment when implemented)
+              // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Logout'),
+          ),
         ],
       ),
     );
   }
 }
 
+// Updated Dashboard Page with Grid and Buttons
 class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Welcome to Fit Sync!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text("Your daily health companion.", style: TextStyle(fontSize: 16)),
-            SizedBox(height: 20),
-            Text("Health Tips:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            _buildTipCard("Stay Hydrated", "Drink at least 8 glasses of water daily to keep your body hydrated."),
-            _buildTipCard("Eat Balanced Meals", "Include proteins, carbs, and healthy fats in your meals."),
-            _buildTipCard("Exercise Regularly", "Engage in at least 30 minutes of physical activity every day."),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              child: Text("View More Tips"),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Welcome, User!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _buildFeatureCard(Icons.directions_walk, "Steps Count"),
+                _buildFeatureCard(Icons.favorite, "Heart Rate"),
+                _buildFeatureCard(Icons.local_drink, "Water Intake"),
+                _buildFeatureCard(Icons.accessibility_new, "Exercise"),
+              ],
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {},
-              child: Text("Start Your Health Journey"),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
             ),
-          ],
-        ),
+            child: const Text("Start Workout"),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTipCard(String title, String description) {
+  Widget _buildFeatureCard(IconData icon, String title) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 5),
-            Text(description, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
-          ],
-        ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 5,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 50, color: Colors.green),
+          const SizedBox(height: 10),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
-  }
-}
-
-class WorkoutsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Workouts Page"));
-  }
-}
-
-class DietPlansPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Diet Plans Page"));
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Profile Page"));
   }
 }
