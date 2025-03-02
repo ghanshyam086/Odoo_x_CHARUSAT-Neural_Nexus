@@ -8,6 +8,7 @@ const postRoutes = require('./routers/postRoutes');
 const doctorRoutes = require('./routers/doctorRoutes');
 const stepRoutes = require('./routers/stepRoutes'); 
 const cors = require('cors');
+const hospitalRoutes = require('./routers/hospitalRoutes');
 
 const port = 3000;
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
+app.use('/api/hospitals', hospitalRoutes);
 
 // Routes
 app.use('/api', stepRoutes);
