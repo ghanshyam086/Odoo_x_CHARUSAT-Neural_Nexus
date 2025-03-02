@@ -61,7 +61,7 @@ const bloodReportSchema = new mongoose.Schema({
     min: 0
   },
   createdAt: {
-    type: Date,
+    type: D   ate,
     default: Date.now
   }
 });
