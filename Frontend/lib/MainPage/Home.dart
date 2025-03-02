@@ -13,7 +13,8 @@ import 'HomeComponents/labreport.dart';
 import 'HomeComponents/NearHospitals.dart';
 import 'HomeComponents/Aboutus.dart';
 import 'HomeComponents/settings.dart';
-import 'package:fitsync/PortSection/ConfigFile.dart'; // For getSteps and submitSteps
+import 'package:fitsync/PortSection/ConfigFile.dart';
+import '../hospital_finder/NearHospital.dart';// For getSteps and submitSteps
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic>? initialUserData;
@@ -72,12 +73,17 @@ class _HomePageState extends State<HomePage> {
           elevation: 0,
           actions: [
             IconButton(
+            icon: const Icon(Icons.local_hospital_rounded, color: Colors.white),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HospitalSection())),
+            tooltip: 'View Articles',
+          ),
+            IconButton(
               icon: const Icon(Icons.article, color: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesPage())),
               tooltip: 'View Articles',
             ),
             IconButton(
-              icon: const Icon(Icons.location_on, color: Colors.white),
+              icon: const Icon(Icons.medical_information, color: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DoctorScreen())),
               tooltip: 'Nearby Doctors',
             ),
